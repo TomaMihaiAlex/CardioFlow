@@ -87,12 +87,12 @@
     },
 
     "appointmentRequests": {
-      ".indexOn": ["patientUid", "medicId", "status"],
+      ".indexOn": ["patientUid", "medicId", "status", "creatLa"],
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'receptionist'",
       "$requestId": {
         ".read": "auth != null && (
           data.child('patientUid').val() === auth.uid ||
-          data.child('medicId').val()    === auth.uid ||
-          root.child('users').child(auth.uid).child('role').val() === 'receptionist'
+          data.child('medicId').val()    === auth.uid
         )",
         ".write": "auth != null && (
           !data.exists() ||
