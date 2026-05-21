@@ -1,0 +1,46 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="300dp"
+    android:viewportWidth="200"
+    android:viewportHeight="300">
+
+    <!-- Cap (cerc realizat prin path) -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:strokeColor="#9E9E9E"
+        android:strokeWidth="2"
+        android:pathData="M 100,20 
+            A 20,20 0 1,1 100,60 
+            A 20,20 0 1,1 100,20 Z" />
+    
+    <!-- Trunchi -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:strokeColor="#9E9E9E"
+        android:strokeWidth="2"
+        android:pathData="M 80,60 L 70,140 L 130,140 L 120,60 Z"/>
+    
+    <!-- Brațe -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:strokeColor="#9E9E9E"
+        android:strokeWidth="2"
+        android:pathData="M 75,70 L 40,110 L 45,115 L 80,80 Z"/>
+    <path
+        android:fillColor="#E0E0E0"
+        android:strokeColor="#9E9E9E"
+        android:strokeWidth="2"
+        android:pathData="M 125,70 L 160,110 L 155,115 L 120,80 Z"/>
+    
+    <!-- Picioare -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:strokeColor="#9E9E9E"
+        android:strokeWidth="2"
+        android:pathData="M 85,140 L 70,210 L 80,210 L 95,140 Z"/>
+    <path
+        android:fillColor="#E0E0E0"
+        android:strokeColor="#9E9E9E"
+        android:strokeWidth="2"
+        android:pathData="M 115,140 L 130,210 L 120,210 L 105,140 Z"/>
+</vector>
