@@ -1,0 +1,50 @@
+# ── Variabile de mediu si secrete ─────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+# .env.example este OK in git (nu contine secrete reale)
+
+# ── Firebase ──────────────────────────────────────────────────────────────────
+serviceAccountKey.json
+*-serviceAccount.json
+firebase-adminsdk-*.json
+.firebase/
+.firebaserc
+
+# ── Dependente ────────────────────────────────────────────────────────────────
+node_modules/
+server/node_modules/
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# ── Editor si OS ──────────────────────────────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.suo
+*.sw?
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ── Certificate si chei private ───────────────────────────────────────────────
+*.pem
+*.p12
+*.pfx
+*.key
+*.crt
+*.cer
