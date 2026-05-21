@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "email": "pacient@test.com",
+    "password": "1234",
+    "role": "pacient",
+    "firstName": "Ion",
+    "lastName": "Popescu",
+    "doctorId": "2"
+  },
+  {
+    "id": "2",
+    "email": "medic@test.com",
+    "password": "1234",
+    "role": "medic",
+    "firstName": "Maria",
+    "lastName": "Vasilescu",
+    "doctorId": ""
+  }
+]
