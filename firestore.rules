@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Funcții helper ─────────────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isMedic() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'medic';
+    }
+    function isPacient() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'pacient';
+    }
+    function ownsMedicalRecord(pacientDoc) {
+      // Medicul deține fișa dacă medicId coincide cu uid-ul său
+      return isMedic() && pacientDoc.data.medicId == request.auth.uid;
+    }
+    function isOwnPatientEmail(pacientDoc) {
+      // Pacientul se identifică prin email (legat de cont Firebase Auth)
+      return isPacient() && pacientDoc.data.email == request.auth.token.email;
+    }
+
+    // ── Colecția `users` ────────────────────────────────────────────────────
+    // Fiecare utilizator citește/scrie DOAR propriul document
+    match /users/{userId} {
+      allow read:   if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
+      allow delete: if false;
+    }
+
+    // ── Colecția `pacienti` ─────────────────────────────────────────────────
+    match /pacienti/{pacientId} {
+      // Medicul creează pacienți doar cu propriul medicId
+      allow create: if isMedic() && request.resource.data.medicId == request.auth.uid;
+
+      // Citire: medicul care deține fișa SAU pacientul prin email
+      allow read: if isAuthenticated() && (
+        ownsMedicalRecord(resource) ||
+        isOwnPatientEmail(resource)
+      );
+
+      // Actualizare: doar medicul care deține fișa
+      allow update: if ownsMedicalRecord(resource)
+                    && request.resource.data.medicId == resource.data.medicId;
+
+      // Ștergere: doar medicul care deține fișa
+      allow delete: if ownsMedicalRecord(resource);
+    }
+
+    // ── Colecția `masuratori` ───────────────────────────────────────────────
+    match /masuratori/{docId} {
+      // Citire: medicul care deține pacientul SAU pacientul însuși
+      allow read: if isAuthenticated() && (
+        (isMedic() &&
+          get(/databases/$(database)/documents/pacienti/$(resource.data.pacientId))
+            .data.medicId == request.auth.uid) ||
+        (isPacient() &&
+          get(/databases/$(database)/documents/pacienti/$(resource.data.pacientId))
+            .data.email == request.auth.token.email)
+      );
+      // Scriere: serviciu IoT sau cloud function (autentificat cu cont de serviciu)
+      allow create: if isAuthenticated();
+      // Măsurătorile sunt imuabile
+      allow update, delete: if false;
+    }
+
+    // ── Colecția `alerme` ───────────────────────────────────────────────────
+    match /alerme/{docId} {
+      allow read: if isAuthenticated() && (
+        (isMedic() &&
+          get(/databases/$(database)/documents/pacienti/$(resource.data.pacientId))
+            .data.medicId == request.auth.uid) ||
+        (isPacient() &&
+          get(/databases/$(database)/documents/pacienti/$(resource.data.pacientId))
+            .data.email == request.auth.token.email)
+      );
+      allow create: if isAuthenticated();
+      // Medicul poate actualiza statusul alertei (activa → rezolvata)
+      allow update: if isMedic() &&
+        get(/databases/$(database)/documents/pacienti/$(resource.data.pacientId))
+          .data.medicId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if false;
+    }
+  }
+}
