@@ -1,16 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/cardioFlowText"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical">
+	
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="50dp"
+		android:orientation="horizontal"
+		android:background="@drawable/main_gradient"
+		>
 
-    <TextView
-        android:id="@+id/tv_doctor_welcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:textAlignment="center" />
+		<TextView
+			android:id="@+id/cardioFlow_text"
+			android:layout_width="116dp"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:gravity="center_vertical"
+			android:shadowColor="@color/black"
+			android:shadowDx="3"
+			android:shadowDy="3"
+			android:shadowRadius="5"
+			android:text="CardioFlow"
+			android:textAlignment="center"
+			android:textColor="@color/white"
+			android:textIsSelectable="false"
+			android:textSize="20sp" />
+
+		<Button
+			android:id="@+id/btn_about2"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_gravity="center"
+			android:layout_weight="1"
+			android:backgroundTint="@android:color/transparent"
+			android:gravity="center"
+			android:text="Despre"
+			android:textColor="@android:color/white" />
+
+		<Button
+			android:id="@+id/btn_settings2"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_gravity="center"
+			android:layout_weight="1"
+			android:backgroundTint="@android:color/transparent"
+			android:gravity="center"
+			android:text="Setări"
+			android:textColor="@android:color/white" />
+
+		<Button
+			android:id="@+id/btn_logout2"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_gravity="center"
+			android:layout_weight="1"
+			android:backgroundTint="@android:color/transparent"
+			android:gravity="center"
+			android:text="Logout"
+			android:textColor="@android:color/white" />
+	</LinearLayout>
+
+    <!-- Mesaj de bun venit (opțional, poate fi scos) -->
+	<TextView
+		android:id="@+id/tv_doctor_welcome"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center"
+		android:padding="8dp"
+		android:textColor="@android:color/white"
+		android:textSize="14sp" />
+
+    <!-- Zonă cu listă pacienți și detalii -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lista pacienților"
+            android:textStyle="bold"
+            android:padding="8dp"
+             />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_patients"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:layout_marginBottom="8dp" />
+
+        <FrameLayout
+            android:id="@+id/details_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone" /> <!-- implicit ascuns -->
+    </LinearLayout>
 
 </LinearLayout>

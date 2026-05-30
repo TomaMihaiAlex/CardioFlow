@@ -18,19 +18,19 @@
         android:fillColor="#E0E0E0"
         android:strokeColor="#9E9E9E"
         android:strokeWidth="2"
-        android:pathData="M 80,60 L 70,140 L 130,140 L 120,60 Z"/>
+        android:pathData="M 80,60 L 75,140 L 125,140 L 120,60 Z"/>
     
     <!-- Brațe -->
     <path
         android:fillColor="#E0E0E0"
         android:strokeColor="#9E9E9E"
         android:strokeWidth="2"
-        android:pathData="M 75,70 L 40,110 L 45,115 L 80,80 Z"/>
+        android:pathData="M 77.5,70 L 42.5,110 L 47.5,115 L 82.5,80 Z"/>
     <path
         android:fillColor="#E0E0E0"
         android:strokeColor="#9E9E9E"
         android:strokeWidth="2"
-        android:pathData="M 125,70 L 160,110 L 155,115 L 120,80 Z"/>
+        android:pathData="M 122.5,70 L 157.5,110 L 152.5,115 L 117.5,80 Z"/>
     
     <!-- Picioare -->
     <path

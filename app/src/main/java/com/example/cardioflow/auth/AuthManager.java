@@ -49,7 +49,7 @@ public class AuthManager {
     private void saveUsersToAssets() {
         // În realitate, pentru scriere în assets nu se poate direct;
         // pentru prototip, păstrăm modificările doar în memorie.
-        // Dacă dorești persistare, poți scrie în internal storage.
+        // Dacă se dorește persistare, se poate scrie în internal storage.
     }
 
     public boolean login(String email, String password) {
@@ -99,6 +99,16 @@ public class AuthManager {
             }
         }
         return null;
+    }
+
+    public List<User> getPatientsForDoctor(String doctorId) {
+        List<User> patients = new ArrayList<>();
+        for(User user : userList) {
+            if(user.getRole().equals("pacient") && doctorId.equals(user.getDoctorId())) {
+                patients.add(user);
+            }
+        }
+        return patients;
     }
 
     public void logout() {

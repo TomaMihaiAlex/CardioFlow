@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Adaugă recomandare:"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/et_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tip (ex: bicicletă)" />
+
+    <EditText
+        android:id="@+id/et_duration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Durată (min/zi)" />
+
+    <EditText
+        android:id="@+id/et_instructions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Instrucțiuni (opțional)" />
+
+    <Button
+        android:id="@+id/btn_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Adaugă"
+        android:backgroundTint="@android:color/holo_red_light" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recomandări existente:"
+        android:layout_marginTop="16dp"
+        android:textStyle="bold" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>
