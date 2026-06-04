@@ -1,6 +1,5 @@
 #include <unity.h>
-#include "../../src/alerts/alert_manager.h"
-#include "../../src/data/thresholds.h"
+#include <alert_manager.h>
 #include <string.h>
 
 static Thresholds makeThresholds() {
@@ -87,6 +86,32 @@ void test_invalid_sensor_does_not_trigger() {
     TEST_ASSERT_FALSE(r.triggered);
 }
 
+void test_measurement_valid_false_does_not_trigger() {
+    Measurement m = makeMeasurement(120, 85, 38.5f);  // all values out of range
+    m.valid = false;
+    Thresholds t = makeThresholds();
+    AlertResult r = checkThresholds(m, t);
+    TEST_ASSERT_FALSE(r.triggered);
+}
+
+void test_hr_beats_spo2_in_priority() {
+    // Both HR and SpO2 out of range — HR must win (checked first)
+    Measurement m = makeMeasurement(120, 85, 36.6f);
+    Thresholds t = makeThresholds();
+    AlertResult r = checkThresholds(m, t);
+    TEST_ASSERT_TRUE(r.triggered);
+    TEST_ASSERT_EQUAL_STRING("high_heart_rate", r.type);
+}
+
+void test_spo2_beats_temp_in_priority() {
+    // Both SpO2 and temp out of range — SpO2 must win
+    Measurement m = makeMeasurement(75, 85, 38.5f);
+    Thresholds t = makeThresholds();
+    AlertResult r = checkThresholds(m, t);
+    TEST_ASSERT_TRUE(r.triggered);
+    TEST_ASSERT_EQUAL_STRING("low_spo2", r.type);
+}
+
 void test_hr_at_exact_boundary_does_not_trigger() {
     // hrMax = 100, heartRate = 100 → NOT > hrMax, no alert
     Measurement m = makeMeasurement(100, 98, 36.6f);
@@ -121,5 +146,8 @@ int main() {
     RUN_TEST(test_invalid_sensor_does_not_trigger);
     RUN_TEST(test_hr_at_exact_boundary_does_not_trigger);
     RUN_TEST(test_build_alert_json_format);
+    RUN_TEST(test_measurement_valid_false_does_not_trigger);
+    RUN_TEST(test_hr_beats_spo2_in_priority);
+    RUN_TEST(test_spo2_beats_temp_in_priority);
     return UNITY_END();
 }

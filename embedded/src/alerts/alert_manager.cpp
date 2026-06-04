@@ -4,7 +4,7 @@
 
 AlertResult checkThresholds(const Measurement& m, const Thresholds& t) {
     AlertResult result{};
-    result.triggered = false;
+    if (!m.valid) return result;
 
     if (m.heartRate != -1 && m.heartRate > t.hrMax) {
         result.triggered = true;
@@ -37,6 +37,7 @@ AlertResult checkThresholds(const Measurement& m, const Thresholds& t) {
 }
 
 void buildAlertJson(const AlertResult& alert, const char* patientId, char* outBuf, size_t bufSize) {
+    if (!alert.triggered || outBuf == nullptr || bufSize == 0) return;
     snprintf(outBuf, bufSize,
         "{\"patientId\":\"%s\",\"type\":\"%s\",\"value\":%.1f,\"severity\":\"%s\"}",
         patientId, alert.type, alert.value, alert.severity
