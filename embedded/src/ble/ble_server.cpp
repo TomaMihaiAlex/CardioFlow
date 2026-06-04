@@ -59,7 +59,7 @@ void CardioFlowBleServer::begin(const char* deviceName) {
 void CardioFlowBleServer::notifyMeasurement(const char* json) {
     if (!isConnected()) return;
     xSemaphoreTake(_mutex, portMAX_DELAY);
-    _charMeasurement->setValue(reinterpret_cast<const uint8_t*>(json), strlen(json));
+    _charMeasurement->setValue(const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(json)), strlen(json));
     _charMeasurement->notify();
     xSemaphoreGive(_mutex);
 }
@@ -84,7 +84,7 @@ void CardioFlowBleServer::notifyEcg(const uint16_t* samples, size_t count) {
 void CardioFlowBleServer::notifyAlert(const char* json) {
     if (!isConnected()) return;
     xSemaphoreTake(_mutex, portMAX_DELAY);
-    _charAlert->setValue(reinterpret_cast<const uint8_t*>(json), strlen(json));
+    _charAlert->setValue(const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(json)), strlen(json));
     _charAlert->notify();
     xSemaphoreGive(_mutex);
 }

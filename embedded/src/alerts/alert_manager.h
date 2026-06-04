@@ -1,13 +1,3 @@
+// Forwarding header — canonical implementation lives in lib/alerts/
 #pragma once
-#include "../data/measurement.h"
-#include "../data/thresholds.h"
-
-struct AlertResult {
-    bool triggered;
-    char type[32];
-    float value;
-    char severity[8];  // "high" or "medium"
-};
-
-AlertResult checkThresholds(const Measurement& m, const Thresholds& t);
-void buildAlertJson(const AlertResult& alert, const char* patientId, char* outBuf, size_t bufSize);
+#include <alert_manager.h>

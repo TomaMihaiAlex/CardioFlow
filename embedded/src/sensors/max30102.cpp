@@ -1,7 +1,7 @@
 #include "max30102.h"
 #include <Wire.h>
-#include <SparkFun_MAX3010x_Sensor_Algorithm.h>
-#include <SparkFun_MAX3010x_Pulse_Oximeter.h>
+#include <MAX30105.h>
+#include <spo2_algorithm.h>
 
 static MAX30105 particleSensor;
 
