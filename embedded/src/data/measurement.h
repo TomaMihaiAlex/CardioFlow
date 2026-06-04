@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <string.h>
 
 #define ECG_SNAPSHOT_SIZE 20   // mostre ECG incluse în pachetul Measurement
 

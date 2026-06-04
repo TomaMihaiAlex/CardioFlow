@@ -16,7 +16,7 @@ struct Thresholds {
 
 // Valori default până la prima configurare de pe telefon
 inline Thresholds defaultThresholds() {
-    Thresholds t;
+    Thresholds t{};
     strncpy(t.patientId, "1", sizeof(t.patientId));
     t.hrMin = 50;
     t.hrMax = 100;

@@ -8,7 +8,12 @@
 #define ECG_LO_PLUS     32
 #define ECG_LO_MINUS    33
 
-// MAX30102 folosește I2C implicit: SDA=21, SCL=22
+// MAX30102 I2C
+#define I2C_SDA_PIN  21
+#define I2C_SCL_PIN  22
+
+// DHT sensor type
+#define DHT_SENSOR_TYPE  DHT11
 
 // Timing
 #define MEASUREMENT_INTERVAL_MS  10000   // 10 secunde
