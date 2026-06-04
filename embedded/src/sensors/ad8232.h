@@ -5,8 +5,8 @@ class Ad8232Sensor {
 public:
     Ad8232Sensor(uint8_t outputPin, uint8_t loPlus, uint8_t loMinus);
     void begin();
-    uint16_t readSample();   // returns ADC value 0-4095 (ESP32 12-bit ADC)
-    bool isLeadOff();        // true = electrodes not connected
+    uint16_t readSample() const;   // returns ADC value 0-4095 (ESP32 12-bit ADC)
+    bool isLeadOff() const;        // true = either electrode disconnected
 
 private:
     uint8_t _outputPin;
