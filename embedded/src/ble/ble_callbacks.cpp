@@ -2,10 +2,10 @@
 #include <ArduinoJson.h>
 #include <Arduino.h>
 
-ThresholdsCallback::ThresholdsCallback(Thresholds* target) : _target(target) {}
+ThresholdsCallback::ThresholdsCallback(Thresholds* target, SemaphoreHandle_t mutex)
+    : _target(target), _mutex(mutex) {}
 
 void ThresholdsCallback::onWrite(BLECharacteristic* characteristic) {
-    // Guard: _target must be valid before any field access
     if (_target == nullptr) {
         Serial.println("Thresholds: _target is null, skipping write");
         return;
@@ -14,6 +14,7 @@ void ThresholdsCallback::onWrite(BLECharacteristic* characteristic) {
     std::string value = characteristic->getValue();
     if (value.empty()) return;
 
+    // Parse JSON before taking mutex — deserialization is the slow part
     JsonDocument doc;
     DeserializationError err = deserializeJson(doc, value.c_str());
     if (err) {
@@ -21,9 +22,11 @@ void ThresholdsCallback::onWrite(BLECharacteristic* characteristic) {
         return;
     }
 
+    // Protect shared Thresholds struct from concurrent read in taskMain
+    if (_mutex != nullptr) xSemaphoreTake(_mutex, pdMS_TO_TICKS(50));
+
     if (doc["patientId"].is<const char*>()) {
         strncpy(_target->patientId, doc["patientId"], sizeof(_target->patientId) - 1);
-        // Guarantee null-termination regardless of source length
         _target->patientId[sizeof(_target->patientId) - 1] = '\0';
     }
 
@@ -121,4 +124,6 @@ void ThresholdsCallback::onWrite(BLECharacteristic* characteristic) {
     Serial.printf("Thresholds write processed: HR=%d-%d, SpO2>=%d, Temp=%.1f-%.1f\n",
         _target->hrMin, _target->hrMax, _target->spo2Min,
         _target->tempMin, _target->tempMax);
+
+    if (_mutex != nullptr) xSemaphoreGive(_mutex);
 }

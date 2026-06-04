@@ -32,6 +32,7 @@ static Ad8232Sensor   ecg(ECG_OUTPUT_PIN, ECG_LO_PLUS, ECG_LO_MINUS);
 static void buildMeasurementJson(const Measurement& m, char* buf, size_t size) {
     JsonDocument doc;
     doc["patientId"]   = m.patientId;
+    doc["valid"]       = m.valid;
     doc["heartRate"]   = m.heartRate;
     doc["spo2"]        = m.spo2;
     doc["temperature"] = m.temperature;
@@ -83,7 +84,7 @@ static void taskMain(void* pvParameters) {
         // Send Measurement via BLE
         char jsonBuf[512];
         buildMeasurementJson(m, jsonBuf, sizeof(jsonBuf));
-        bleServer.notifyMeasurement(jsonBuf);
+        if (bleServer.isConnected()) bleServer.notifyMeasurement(jsonBuf);
         Serial.printf("[Main] HR=%d SpO2=%d Temp=%.1f Hum=%.1f\n",
             m.heartRate, m.spo2, m.temperature, m.humidity);
 
@@ -92,7 +93,7 @@ static void taskMain(void* pvParameters) {
         if (alert.triggered) {
             char alertBuf[256];
             buildAlertJson(alert, m.patientId, alertBuf, sizeof(alertBuf));
-            bleServer.notifyAlert(alertBuf);
+            if (bleServer.isConnected()) bleServer.notifyAlert(alertBuf);
             Serial.printf("[Alert] %s: %.1f (%s)\n", alert.type, alert.value, alert.severity);
         }
 
@@ -135,6 +136,10 @@ void setup() {
 
     gThresholdsMutex = xSemaphoreCreateMutex();
     gEcgMutex        = xSemaphoreCreateMutex();
+    if (gThresholdsMutex == nullptr || gEcgMutex == nullptr) {
+        Serial.println("FATAL: mutex creation failed — insufficient heap");
+        while (1) {}
+    }
 
     dht.begin();
     ecg.begin();
@@ -145,11 +150,12 @@ void setup() {
 
     bleServer.begin(BLE_DEVICE_NAME);
     bleServer.thresholdsCharacteristic->setCallbacks(
-        new ThresholdsCallback(&gThresholds)
+        new ThresholdsCallback(&gThresholds, gThresholdsMutex)
     );
 
+    // EcgTask at higher priority (2) so it preempts taskMain's BLE/serial sections
     xTaskCreate(taskMain, "MainTask", 8192, NULL, 1, NULL);
-    xTaskCreate(taskEcg,  "EcgTask",  4096, NULL, 1, NULL);
+    xTaskCreate(taskEcg,  "EcgTask",  6144, NULL, 2, NULL);
 
     Serial.println("FreeRTOS tasks started. Waiting for BLE connection...");
 }
