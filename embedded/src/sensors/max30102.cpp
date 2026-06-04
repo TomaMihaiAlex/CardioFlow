@@ -8,12 +8,8 @@ static MAX30105 particleSensor;
 // Static buffers are file-scope — acceptable for single-instance embedded use
 // (only one MAX30102 sensor is expected per device).
 static const int32_t BUFFER_LENGTH = 100;
-static uint32_t irBuffer[100];
-static uint32_t redBuffer[100];
-static int32_t spo2;
-static int8_t validSPO2;
-static int32_t heartRate;
-static int8_t validHeartRate;
+static uint32_t irBuffer[BUFFER_LENGTH];
+static uint32_t redBuffer[BUFFER_LENGTH];
 
 bool Max30102Sensor::begin() {
     if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
@@ -36,6 +32,9 @@ PulseReading Max30102Sensor::read() {
         irBuffer[i]  = particleSensor.getIR();
         particleSensor.nextSample();
     }
+
+    int32_t spo2 = 0; int8_t validSPO2 = 0;
+    int32_t heartRate = 0; int8_t validHeartRate = 0;
 
     maxim_heart_rate_and_oxygen_saturation(
         irBuffer, BUFFER_LENGTH, redBuffer,
