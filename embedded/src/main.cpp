@@ -24,9 +24,31 @@ static volatile size_t gEcgWriteIdx = 0;
 static SemaphoreHandle_t gEcgMutex;
 
 // ─── Sensors ────────────────────────────────────────────────────
+#ifndef MOCK_SENSORS
 static Dht11Sensor    dht(DHT_PIN);
 static Max30102Sensor pulse;
 static Ad8232Sensor   ecg(ECG_OUTPUT_PIN, ECG_LO_PLUS, ECG_LO_MINUS);
+#endif
+
+#ifdef MOCK_SENSORS
+// Generates realistic-looking fake sensor data that varies over time
+static DhtReading mockDht() {
+    float t = millis() / 1000.0f;
+    return { 36.5f + 0.3f * sinf(t * 0.1f), 45.0f + 5.0f * sinf(t * 0.07f), true };
+}
+static PulseReading mockPulse() {
+    float t = millis() / 1000.0f;
+    int hr = 72 + (int)(8.0f * sinf(t * 0.15f));
+    int sp = 98 + (int)(1.0f * sinf(t * 0.05f));
+    return { hr, sp, true };
+}
+static uint16_t mockEcgSample() {
+    // Simulated ECG: baseline + QRS spike every ~0.8s
+    float t = fmodf(millis() / 1000.0f, 0.8f);
+    float v = 2048.0f + 200.0f * expf(-50.0f * (t - 0.4f) * (t - 0.4f));
+    return (uint16_t)constrain((int)v, 0, 4095);
+}
+#endif
 
 // ─── Helpers ────────────────────────────────────────────────────
 static void buildMeasurementJson(const Measurement& m, char* buf, size_t size) {
@@ -62,12 +84,17 @@ static void taskMain(void* pvParameters) {
         strncpy(m.patientId, localThresh.patientId, sizeof(m.patientId) - 1);
 
         // Read sensors
+#ifdef MOCK_SENSORS
+        DhtReading dhtR = mockDht();
+        PulseReading pulseR = mockPulse();
+#else
         DhtReading dhtR = dht.read();
+        PulseReading pulseR = pulse.read();
+#endif
         m.temperature = dhtR.temperature;
         m.humidity    = dhtR.humidity;
         if (!dhtR.valid) m.valid = false;
 
-        PulseReading pulseR = pulse.read();
         m.heartRate = pulseR.heartRate;
         m.spo2      = pulseR.spo2;
         if (!pulseR.valid) m.valid = false;
@@ -107,7 +134,11 @@ static void taskEcg(void* pvParameters) {
     size_t packetIdx = 0;
 
     while (true) {
+#ifdef MOCK_SENSORS
+        uint16_t sample = mockEcgSample();
+#else
         uint16_t sample = ecg.isLeadOff() ? 0 : ecg.readSample();
+#endif
 
         // Write to circular buffer
         if (xSemaphoreTake(gEcgMutex, 0) == pdTRUE) {
@@ -141,12 +172,15 @@ void setup() {
         while (1) {}
     }
 
+#ifdef MOCK_SENSORS
+    Serial.println("*** MOCK MODE — date false, niciun senzor necesar ***");
+#else
     dht.begin();
     ecg.begin();
-
     if (!pulse.begin()) {
         Serial.println("EROARE: MAX30102 nu a fost gasit! Verifica I2C: SDA=21, SCL=22.");
     }
+#endif
 
     bleServer.begin(BLE_DEVICE_NAME);
     bleServer.thresholdsCharacteristic->setCallbacks(
