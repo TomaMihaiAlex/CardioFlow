@@ -30,6 +30,9 @@ export default function ReceptionistDashboard() {
       list.reverse();
       setRequests(list);
       setLoading(false);
+    }, (err) => {
+      console.error('ReceptionistDashboard: citire appointmentRequests eșuată', err);
+      setLoading(false); // fără spinner infinit pe eroare/permisiune refuzată
     });
     return () => unsub();
   }, []);
@@ -43,6 +46,8 @@ export default function ReceptionistDashboard() {
         if (d.role === 'medic') list.push({ uid: child.key, ...d });
       });
       setMedici(list);
+    }, (err) => {
+      console.error('ReceptionistDashboard: citire users (medici) eșuată', err);
     });
     return () => unsub();
   }, []);

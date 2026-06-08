@@ -13,7 +13,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await loginUser(email, password);
+      await loginUser(email.trim().toLowerCase(), password);
       // Redirecționarea este gestionată de App.jsx prin schimbarea stării de auth
     } catch {
       setError('Email sau parolă incorectă. Verificați datele și încercați din nou.');

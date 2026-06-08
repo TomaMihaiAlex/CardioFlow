@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { ref, get } from 'firebase/database';
+import { ref, onValue } from 'firebase/database';
 import { auth, db } from '../firebase';
 
 const AuthContext = createContext(null);
@@ -12,28 +12,54 @@ export function AuthProvider({ children }) {
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          // Citim rolul utilizatorului din Realtime Database: /users/{uid}
-          const snap = await get(ref(db, `users/${firebaseUser.uid}`));
-          if (snap.exists()) {
-            const data = snap.val();
-            setRole(data.role);
-            setUserData(data);
-          }
-        } catch (err) {
-          console.error('Eroare la citirea rolului:', err);
-        }
-        setUser(firebaseUser);
-      } else {
+    let unsubUserDoc = null;
+
+    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      // Curățăm orice listener anterior pe documentul utilizatorului
+      if (unsubUserDoc) { unsubUserDoc(); unsubUserDoc = null; }
+
+      if (!firebaseUser) {
         setUser(null);
         setRole(null);
         setUserData(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      setUser(firebaseUser);
+
+      // Listener LIVE pe /users/{uid}. Un get() unic rata cursa cu scrierea
+      // rolului din Register (createUser loghează instant, înainte ca set-ul
+      // documentului să se termine) → rolul rămânea null pentru totdeauna.
+      // onValue prinde scrierea reactiv, fără reload.
+      const userRef = ref(db, `users/${firebaseUser.uid}`);
+      unsubUserDoc = onValue(
+        userRef,
+        (snap) => {
+          if (snap.exists()) {
+            const data = snap.val();
+            setRole(data.role ?? null);
+            setUserData(data);
+          } else {
+            setRole(null);
+            setUserData(null);
+          }
+          setLoading(false);
+        },
+        (err) => {
+          // Niciodată spinner infinit: rezolvăm loading-ul și pe eroare.
+          console.error('Eroare la citirea profilului utilizatorului:', err);
+          setRole(null);
+          setUserData(null);
+          setLoading(false);
+        }
+      );
     });
-    return unsub;
+
+    return () => {
+      if (unsubUserDoc) unsubUserDoc();
+      unsubAuth();
+    };
   }, []);
 
   return (

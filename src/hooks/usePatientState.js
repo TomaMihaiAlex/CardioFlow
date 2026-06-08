@@ -46,6 +46,9 @@ export function usePatientState() {
         if (d.status === 'active') found = { id: child.key, ...d };
       });
       setMedicalRecord(found);
+    }, (err) => {
+      console.error('usePatientState: citire medicalRecords eșuată', err);
+      setMedicalRecord(null); // rezolvăm loading-ul — fără spinner infinit
     });
 
     // ── 2. pacienti (flux vechi — medic a adăugat direct fișa) ────────────
@@ -63,6 +66,9 @@ export function usePatientState() {
         found = { id: child.key, ...data };
       });
       setLegacyPatientDoc(found);
+    }, (err) => {
+      console.error('usePatientState: citire pacienti (legacy) eșuată', err);
+      setLegacyPatientDoc(null);
     });
 
     // ── 3. appointmentRequests (cereri de programare) ──────────────────────
@@ -81,6 +87,9 @@ export function usePatientState() {
         }
       });
       setAppointmentRequest(found);
+    }, (err) => {
+      console.error('usePatientState: citire appointmentRequests eșuată', err);
+      setAppointmentRequest(null);
     });
 
     return () => { unsubRec(); unsubLeg(); unsubReq(); };

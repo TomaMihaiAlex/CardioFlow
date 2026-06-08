@@ -36,6 +36,9 @@ export default function MedicDashboard() {
       setPatients(list);
       setSelectedPatient(prev => prev ? (list.find(p => p.id === prev.id) || prev) : null);
       setLoading(false);
+    }, (err) => {
+      console.error('MedicDashboard: citire pacienti eșuată', err);
+      setLoading(false); // fără spinner infinit pe eroare/permisiune refuzată
     });
     return () => unsub();
   }, [user]);
@@ -53,6 +56,8 @@ export default function MedicDashboard() {
       });
       list.sort((a, b) => (b.creatLa || 0) - (a.creatLa || 0));
       setAppointments(list);
+    }, (err) => {
+      console.error('MedicDashboard: citire appointmentRequests eșuată', err);
     });
     return () => unsub();
   }, [user]);

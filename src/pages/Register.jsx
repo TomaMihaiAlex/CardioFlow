@@ -34,12 +34,13 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const credential = await registerUser(form.email.trim(), form.password);
+      const email = form.email.trim().toLowerCase();
+      const credential = await registerUser(email, form.password);
       const uid = credential.user.uid;
 
       await set(ref(db, `users/${uid}`), {
         uid,
-        email:   form.email.trim().toLowerCase(),
+        email,
         role:    form.role,
         prenume: form.prenume.trim(),
         nume:    form.nume.trim(),
