@@ -1,0 +1,54 @@
+[
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/item_patient.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/item_patient.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/fragment_patient_details.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_patient_details.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/activity_change_password.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_change_password.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/activity_main.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/fragment_home.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/fragment_history.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_history.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/activity_register.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_register.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/fragment_thresholds_config.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_thresholds_config.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/activity_doctor.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_doctor.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/fragment_recommendations.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_recommendations.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/fragment_recommendations_doctor.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_recommendations_doctor.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/activity_login.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-mergeDebugResources-44:/layout/fragment_alerts.xml",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_alerts.xml"
+    }
+]

@@ -1,0 +1,130 @@
+[
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-hdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_activity_register.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_register.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-anydpi_ic_launcher.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-anydpi/ic_launcher.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_activity_change_password.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_change_password.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_fragment_recommendations_doctor.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_recommendations_doctor.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-anydpi_ic_launcher_round.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-anydpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-xxxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_activity_main.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_fragment_thresholds_config.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_thresholds_config.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_activity_login.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_fragment_alerts.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_alerts.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_fragment_home.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-xxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-xxxhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_fragment_recommendations.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_recommendations.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-hdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/drawable_main_gradient2.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/drawable/main_gradient2.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-mdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_item_patient.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/item_patient.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/xml_backup_rules.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-xhdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_activity_doctor.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/activity_doctor.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/xml_data_extraction_rules.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-xxhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/drawable_body_silhouette.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/drawable/body_silhouette.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/drawable_main_gradient.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/drawable/main_gradient.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-mdpi/ic_launcher.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_fragment_history.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_history.xml"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "com.example.cardioflow.app-main-47:/mipmap-xhdpi/ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.cardioflow.app-debug-45:/layout_fragment_patient_details.xml.flat",
+        "source": "com.example.cardioflow.app-main-47:/layout/fragment_patient_details.xml"
+    }
+]

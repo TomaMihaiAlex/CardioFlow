@@ -1,0 +1,48 @@
+{
+  "measurements": [
+    {
+      "patientId": "1",
+      "timestamp": "2026-05-30T10:00:00Z",
+      "heartRate": 75,
+      "spo2": 98,
+      "temperature": 36.6,
+      "humidity": 42.5
+    }
+  ],
+  "alerts": [
+    {
+      "alertId": "a1",
+      "patientId": "1",
+      "type": "high_heart_rate",
+      "value": 120,
+      "timestamp": "2026-05-30T09:30:00Z",
+      "userText": "Mă simt amețit",
+      "severity": "high"
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendationId": "r1",
+      "patientId": "1",
+      "doctorId": "2",
+      "type": "bicicletă",
+      "dailyDurationMin": 30,
+      "instructions": "Mergeți cu bicicleta zilnic",
+      "severity": "medium"
+    }
+  ],
+  "thresholds": [
+    {
+      "patientId": "1",
+      "hr_min": 50,
+      "hr_max": 100,
+      "spo2_min": 90,
+      "temp_min": 35.5,
+      "temp_max": 37.5,
+      "hum_min": 30,
+      "hum_max": 70,
+      "persist_seconds": 10,
+      "activity_interval_minutes": 5
+    }
+  ]
+}
