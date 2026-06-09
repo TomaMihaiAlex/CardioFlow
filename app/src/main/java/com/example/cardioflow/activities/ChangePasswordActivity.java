@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.cardioflow.R;
 import com.example.cardioflow.auth.AuthManager;
+import com.example.cardioflow.utils.ThemeHelper;
 
 public class ChangePasswordActivity extends AppCompatActivity {
     private EditText etEmail, etOldPassword, etNewPassword, etConfirmPassword;
@@ -17,6 +18,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
 

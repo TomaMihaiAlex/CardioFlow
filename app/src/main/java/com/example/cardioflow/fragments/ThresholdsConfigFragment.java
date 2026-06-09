@@ -84,9 +84,9 @@ public class ThresholdsConfigFragment extends Fragment {
             t.setPersistSeconds(Integer.parseInt(etPersist.getText().toString()));
             t.setActivityIntervalMinutes(Integer.parseInt(etActivityInterval.getText().toString()));
             DataManager.getInstance(requireContext()).updateThresholds(t);
-            Toast.makeText(getContext(), "Configurări salvate", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.config_saved, Toast.LENGTH_SHORT).show();
         } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), "Completați corect toate câmpurile numerice", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.error_numeric_fields, Toast.LENGTH_SHORT).show();
         }
     }
 }

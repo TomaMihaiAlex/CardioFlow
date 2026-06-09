@@ -4,23 +4,50 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center">
+    android:padding="32dp"
+    android:gravity="center"
+    android:background="#F8F9FA">
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@android:drawable/ic_menu_myplaces"
+        app:tint="#B71C1C"
+        android:layout_marginBottom="16dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="CardioFlow"
-        android:textSize="32sp"
+        android:textSize="36sp"
         android:textStyle="bold"
-        android:textColor="@android:color/holo_red_light"
+        android:textColor="#B71C1C"
+        android:shadowColor="#40000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Monitorizare cardiacă inteligentă"
+        android:textSize="16sp"
+        android:textColor="#616161"
         android:layout_marginBottom="32dp" />
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_email"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:hint="Email"
-        app:endIconMode="clear_text">
+        app:boxStrokeColor="#B71C1C"
+        app:hintTextColor="#B71C1C"
+        app:startIconDrawable="@android:drawable/ic_dialog_email"
+        app:startIconTint="#B71C1C"
+        app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_email"
@@ -30,10 +57,18 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_password"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:hint="Parolă"
-        app:endIconMode="password_toggle">
+        app:boxStrokeColor="#B71C1C"
+        app:hintTextColor="#B71C1C"
+        app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
+        app:startIconTint="#B71C1C"
+        app:endIconMode="password_toggle"
+        app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_password"
@@ -42,29 +77,34 @@
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_login"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="Autentificare"
-        android:backgroundTint="@android:color/holo_red_light"
+        android:textSize="18sp"
+        android:textAllCaps="false"
+        app:cornerRadius="12dp"
+        android:backgroundTint="#B71C1C"
+        app:elevation="4dp"
         android:layout_marginTop="16dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_register"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Înregistrare cont nou"
-        style="?attr/borderlessButtonStyle"
-        android:textColor="@android:color/holo_red_light"
+        android:textColor="#B71C1C"
         android:layout_marginTop="8dp" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_forgot_password"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ai uitat parola?"
-        style="?attr/borderlessButtonStyle"
-        android:textColor="@android:color/darker_gray" />
+        android:textColor="#616161"
+        android:textSize="12sp" />
 
 </LinearLayout>

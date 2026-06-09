@@ -1,12 +1,118 @@
 <resources>
     <string name="app_name">CardioFlow</string>
-    <string name="action_settings">Settings</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-	
-	<string-array name="roles_array">
-    <item>pacient</item>
-    <item>medic</item>
-	</string-array>
-	
+
+    <!-- Navigation & Common -->
+    <string name="nav_home">Acasă</string>
+    <string name="nav_recommendations">Recomandări</string>
+    <string name="nav_history">Istoric</string>
+    <string name="nav_about">Despre</string>
+    <string name="nav_settings">Setări</string>
+    <string name="btn_logout">Deconectare</string>
+    <string name="btn_save">Salvează</string>
+    <string name="btn_confirm">Confirmă</string>
+    <string name="btn_close">Închide</string>
+    <string name="btn_add">Adaugă</string>
+    <string name="loading">Se încarcă...</string>
+
+    <!-- Authentication -->
+    <string name="welcome_patient">Bine ai venit, pacient %1$s %2$s</string>
+    <string name="welcome_doctor">Bine ai venit, doctor %1$s %2$s! Aici vei vedea lista pacienților.</string>
+    <string name="login_title">Autentificare</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_register">Înregistrare</string>
+
+    <!-- Home Fragment (Patient) -->
+    <string name="health_status_title">Starea ta de sănătate</string>
+    <string name="last_measurements">Ultimele măsurători</string>
+    <string name="hr_format">Puls: %d bpm</string>
+    <string name="spo2_format">SpO₂: %d %%</string>
+    <string name="temp_format">Temperatură: %.1f °C</string>
+    <string name="hum_format">Umiditate: %.1f %%</string>
+    <string name="btn_start_activity">Start Activitate</string>
+    <string name="activity_countdown_format">Activitate: %02d:%02d</string>
+    <string name="activity_started_msg">Activitate pornită. Alarmele sunt suspendate pentru %d minute.</string>
+    <string name="status_normal">Stare: Normală</string>
+    <string name="status_abnormal_detect">Stare anormală detectată (%1$d/%2$d)</string>
+    <string name="status_activity_detected">Activitate fizică detectată - Alarme suspendate</string>
+
+    <!-- Body Silhouette -->
+    <string name="desc_heart">Inimă</string>
+    <string name="desc_lungs">Plămâni</string>
+    <string name="desc_skin">Piele</string>
+    <string name="body_part_heart">Inimă (Puls)</string>
+    <string name="body_part_lungs">Plămâni (SpO₂)</string>
+    <string name="body_part_skin">Piele (Temperatură)</string>
+    <string name="current_hr_format">Puls curent: %d bpm</string>
+    <string name="current_spo2_format">SpO₂ curent: %d%%</string>
+    <string name="current_temp_hum_format">Temperatură: %.1f °C\nUmiditate: %.1f%%</string>
+    <string name="normal_range_hr">Interval normal: %1$d - %2$d bpm</string>
+    <string name="normal_range_spo2">SpO₂ minim: %d%%</string>
+    <string name="normal_range_temp">Temperatură normală: %1$.1f - %2$.1f °C</string>
+    <string name="no_data_available">Nicio dată disponibilă</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Setări</string>
+    <string name="ble_interval_label">Interval reconectare BLE (secunde)</string>
+    <string name="btn_clear_data">Șterge date locale</string>
+    <string name="btn_simulate_ble">Simulează conexiune BLE</string>
+    <string name="btn_change_password">Schimbă Parola</string>
+    <string name="settings_saved">Setări salvate</string>
+    <string name="local_data_cleared">Datele locale au fost șterse</string>
+    <string name="simulate_ble_msg">Simulare conexiune BLE pornită</string>
+
+    <!-- Alarms & Alerts -->
+    <string name="alarm_dialog_title">ALARMĂ: %s</string>
+    <string name="alarm_dialog_msg">S-a detectat valoarea: %.1f\nCum te simți?</string>
+    <string name="alert_saved_msg">Alertă salvată și pregătită pentru trimitere.</string>
+    <string name="notification_title">Alarmă CardioFlow</string>
+    <string name="notification_msg">S-a detectat o valoare anormală: %1$s (%2$.1f)</string>
+
+    <!-- Recommendations -->
+    <string name="recommendations_title">Recomandări Medicale</string>
+    <string name="rec_duration_format">%d min/zi</string>
+    <string name="rec_added_msg">Recomandare adăugată</string>
+    <string name="rec_empty_instructions">Fără instrucțiuni</string>
+    <string name="error_fill_fields">Completați tipul și durata</string>
+
+    <!-- Doctor -->
+    <string name="patients_list_title">Lista pacienților</string>
+    <string name="interactive_body_title">Vizualizare Interactivă Corp</string>
+    <string name="interactive_body_instruction">Apasă pe zonele marcate (inimă, plămâni, piele) pentru a vedea detalii în timp real.</string>
+    <string name="tab_history">Istoric</string>
+    <string name="tab_body">Corp</string>
+    <string name="tab_alerts">Alarme</string>
+    <string name="tab_recommendations">Recomandări</string>
+    <string name="tab_config">Configurări</string>
+
+    <!-- Thresholds Config -->
+    <string name="error_numeric_fields">Completați corect toate câmpurile numerice</string>
+    <string name="config_saved">Configurări salvate</string>
+
+    <!-- Authentication Errors & Msgs -->
+    <string name="error_fill_all_fields">Completați toate câmpurile</string>
+    <string name="login_success">Autentificare reușită</string>
+    <string name="login_failed">Email sau parolă incorecte</string>
+    <string name="error_passwords_mismatch">Parolele nu coincid</string>
+    <string name="registration_success">Cont creat cu succes! Vă puteți autentifica.</string>
+    <string name="error_user_exists">Email deja existent</string>
+
+    <!-- History & Filters -->
+    <string name="filter_all">Toate</string>
+    <string name="filter_hr">Puls</string>
+    <string name="filter_spo2">SpO2</string>
+    <string name="filter_temp">Temperatură</string>
+    <string name="filter_hum">Umiditate</string>
+    <string name="filter_alarms">Alarme</string>
+    <string name="history_alarm_format">ALARMĂ: %1$s (%2$.1f)</string>
+    <string name="history_no_comment">Niciun comentariu</string>
+    <string name="history_measurement_hr_spo2">Puls: %1$d, SpO2: %2$d%%</string>
+    <string name="history_measurement_temp_hum_time">Temp: %1$.1f, Hum: %2$.1f - %3$s</string>
+
+    <!-- About Dialog -->
+    <string name="about_title">Despre CardioFlow</string>
+    <string name="about_message">CardioFlow - Sistem purtabil de supraveghere a stării de sănătate\n\nVersiune: %1$s\n© 2026 Grupa 6, Echipa 2\n\nProgramator șef: Toma D. Mihai-Alex\nAdjunct: Todică O. Ovidiu-Victor-Nicușor\nSecretar: Stan D. Alexandru-Daniel\n\nEchipe:\n• Web: Sichigea M. Marius-Claudiu, Stănescu E. A. Vlad\n• Cloud: Tivig G. Ion-Damian, Șandru P. Petru-Alexandru\n• Embedded: Țivlică G. Paul-Matei, Stavenschi Maxim, Todică O. Ovidiu-Victor-Nicușor\n• Mobile: Stan D. Alexandru-Daniel, Toma D. Mihai-Alex, Tătaru F. Vlad-Mihai\n\nAcest sistem nu înlocuiește un diagnostic medical.\nDatele sunt preluate de la senzori și sunt doar orientative.\n\nPentru detalii, consultați documentația tehnică.</string>
+
+    <string name="registration_title">Creare Cont</string>
+    <string name="registration_subtitle">Alătură-te comunității CardioFlow</string>
+    <string name="select_role">Selectează Rolul</string>
 </resources>

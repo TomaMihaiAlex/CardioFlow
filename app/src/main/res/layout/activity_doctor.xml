@@ -5,73 +5,56 @@
 	android:id="@+id/cardioFlowText"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:orientation="vertical">
+	android:orientation="vertical"
+    android:background="?android:attr/windowBackground">
 	
 	<LinearLayout
 		android:layout_width="match_parent"
-		android:layout_height="50dp"
+		android:layout_height="?attr/actionBarSize"
 		android:orientation="horizontal"
-		android:background="@drawable/main_gradient"
+		android:background="?attr/colorPrimary"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
 		>
 
 		<TextView
 			android:id="@+id/cardioFlow_text"
-			android:layout_width="116dp"
+			android:layout_width="0dp"
 			android:layout_height="match_parent"
 			android:layout_weight="1"
 			android:gravity="center_vertical"
-			android:shadowColor="@color/black"
-			android:shadowDx="3"
-			android:shadowDy="3"
-			android:shadowRadius="5"
-			android:text="CardioFlow"
-			android:textAlignment="center"
-			android:textColor="@color/white"
-			android:textIsSelectable="false"
-			android:textSize="20sp" />
+			android:text="@string/app_name"
+			android:textColor="?attr/colorOnPrimary"
+			android:textSize="20sp"
+            android:textStyle="bold" />
 
-		<Button
-			android:id="@+id/btn_about2"
+		<com.google.android.material.button.MaterialButton
+			android:id="@+id/btn_doctor_about"
 			android:layout_width="wrap_content"
 			android:layout_height="match_parent"
 			android:layout_gravity="center"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/transparent"
-			android:gravity="center"
-			android:text="Despre"
-			android:textColor="@android:color/white" />
+			style="@style/Widget.MaterialComponents.Button.TextButton"
+			android:text="@string/nav_about"
+			android:textColor="?attr/colorOnPrimary" />
 
-		<Button
-			android:id="@+id/btn_settings2"
+		<com.google.android.material.button.MaterialButton
+			android:id="@+id/btn_doctor_settings"
 			android:layout_width="wrap_content"
 			android:layout_height="match_parent"
 			android:layout_gravity="center"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/transparent"
-			android:gravity="center"
-			android:text="Setări"
-			android:textColor="@android:color/white" />
-
-		<Button
-			android:id="@+id/btn_logout2"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_gravity="center"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/transparent"
-			android:gravity="center"
-			android:text="Logout"
-			android:textColor="@android:color/white" />
+			style="@style/Widget.MaterialComponents.Button.TextButton"
+			android:text="@string/nav_settings"
+			android:textColor="?attr/colorOnPrimary" />
 	</LinearLayout>
 
-    <!-- Mesaj de bun venit (opțional, poate fi scos) -->
+    <!-- Mesaj de bun venit -->
 	<TextView
 		android:id="@+id/tv_doctor_welcome"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:gravity="center"
 		android:padding="8dp"
-		android:textColor="@android:color/white"
+		android:textColor="?attr/colorOnSurfaceVariant"
 		android:textSize="14sp" />
 
     <!-- Zonă cu listă pacienți și detalii -->
@@ -84,9 +67,10 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Lista pacienților"
+            android:text="@string/patients_list_title"
             android:textStyle="bold"
             android:padding="8dp"
+            android:textColor="?attr/colorOnSurface"
              />
 
         <androidx.recyclerview.widget.RecyclerView

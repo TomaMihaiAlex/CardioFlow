@@ -1,118 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/cardioFlowText"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical">
-	
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="50dp"
-		android:orientation="horizontal"
-		android:background="@drawable/main_gradient"
-		>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/windowBackground">
 
-		<TextView
-			android:id="@+id/cardioFlow_text2"
-			android:layout_width="116dp"
-			android:layout_height="match_parent"
-			android:layout_weight="1"
-			android:gravity="center_vertical"
-			android:shadowColor="@color/black"
-			android:shadowDx="3"
-			android:shadowDy="3"
-			android:shadowRadius="5"
-			android:text="CardioFlow"
-			android:textAlignment="center"
-			android:textColor="@color/white"
-			android:textIsSelectable="false"
-			android:textSize="20sp" />
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        app:elevation="4dp">
 
-		<Button
-			android:id="@+id/btn_about"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_gravity="center"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/transparent"
-			android:gravity="center"
-			android:text="Despre"
-			android:textColor="@android:color/white" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="?attr/colorOnPrimary">
 
-		<Button
-			android:id="@+id/btn_settings"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_gravity="center"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/transparent"
-			android:gravity="center"
-			android:text="Setări"
-			android:textColor="@android:color/white" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-		<Button
-			android:id="@+id/btn_logout"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_gravity="center"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/transparent"
-			android:gravity="center"
-			android:text="Logout"
-			android:textColor="@android:color/white" />
-	</LinearLayout>
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/app_name"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#40000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="2" />
 
-	<FrameLayout
-		android:id="@+id/fragment_container"
-		android:layout_width="match_parent"
-		android:layout_height="498dp"
-		android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/btn_about"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_info_details"
+                    app:tint="?attr/colorOnPrimary"
+                    android:contentDescription="@string/nav_about" />
 
-		<TextView
-			android:id="@+id/tv_patient_welcome"
-			android:layout_width="match_parent"
-			android:layout_height="52dp"
-			android:layout_gravity="bottom"
-			android:gravity="center" />
-	</FrameLayout>
+                <ImageButton
+                    android:id="@+id/btn_settings"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_preferences"
+                    app:tint="?attr/colorOnPrimary"
+                    android:contentDescription="@string/nav_settings" />
 
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:background="@drawable/main_gradient2"
-		android:elevation="8dp"
-		android:gravity="center"
-		android:orientation="horizontal"
-		android:padding="8dp">
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
-		<Button
-			android:id="@+id/btn_home"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/white"
-			android:text="Acasă"
-			android:textColor="@android:color/holo_red_light" />
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:paddingBottom="56dp">
 
-		<Button
-			android:id="@+id/btn_recommendations"
-			android:layout_width="20dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/white"
-			android:text="Recomandări"
-			android:textColor="@android:color/holo_red_light" />
+        <TextView
+            android:id="@+id/tv_patient_welcome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:padding="16dp"
+            android:gravity="center"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" />
+    </FrameLayout>
 
-		<Button
-			android:id="@+id/btn_history"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:backgroundTint="@android:color/white"
-			android:text="Istoric"
-			android:textColor="@android:color/holo_red_light" />
-	</LinearLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?attr/colorSurface"
+        app:elevation="16dp"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemIconTint="@color/bnv_tab_color"
+        app:itemTextColor="@color/bnv_tab_color"
+        app:itemActiveIndicatorStyle="@style/Widget.App.BottomNavigationView.ActiveIndicator"
+        app:labelVisibilityMode="labeled" />
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

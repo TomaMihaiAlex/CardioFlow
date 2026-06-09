@@ -9,6 +9,8 @@ import com.example.cardioflow.fragments.HistoryFragment;
 import com.example.cardioflow.fragments.AlertsFragment;
 import com.example.cardioflow.fragments.RecommendationsFragmentDoctor;
 import com.example.cardioflow.fragments.ThresholdsConfigFragment;
+import com.example.cardioflow.fragments.PatientBodyFragment;
+import com.example.cardioflow.R;
 
 public class PatientDetailsPagerAdapter extends FragmentStateAdapter {
 
@@ -26,10 +28,12 @@ public class PatientDetailsPagerAdapter extends FragmentStateAdapter {
             case 0:
                 return HistoryFragment.newInstance(patientId);
             case 1:
-                return AlertsFragment.newInstance(patientId);
+                return PatientBodyFragment.newInstance(patientId);
             case 2:
-                return RecommendationsFragmentDoctor.newInstance(patientId);
+                return AlertsFragment.newInstance(patientId);
             case 3:
+                return RecommendationsFragmentDoctor.newInstance(patientId);
+            case 4:
                 return ThresholdsConfigFragment.newInstance(patientId);
             default:
                 return HistoryFragment.newInstance(patientId);
@@ -38,15 +42,16 @@ public class PatientDetailsPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 4;
+        return 5;
     }
 
-    public static String getTabTitle(int position) {
+    public static String getTabTitle(int position, android.content.Context context) {
         switch (position) {
-            case 0: return "Istoric";
-            case 1: return "Alarme";
-            case 2: return "Recomandări";
-            case 3: return "Configurări";
+            case 0: return context.getString(R.string.tab_history);
+            case 1: return context.getString(R.string.tab_body);
+            case 2: return context.getString(R.string.tab_alerts);
+            case 3: return context.getString(R.string.tab_recommendations);
+            case 4: return context.getString(R.string.tab_config);
             default: return "";
         }
     }

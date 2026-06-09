@@ -2,28 +2,30 @@ package com.example.cardioflow.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import com.example.cardioflow.auth.AuthManager;
 
+import com.example.cardioflow.R;
+import com.example.cardioflow.utils.ThemeHelper;
+import com.example.cardioflow.auth.AuthManager;
 import com.example.cardioflow.fragments.HistoryFragment;
 import com.example.cardioflow.fragments.HomeFragment;
-import com.example.cardioflow.R;
 import com.example.cardioflow.fragments.RecommendationsFragment;
 import com.example.cardioflow.models.User;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnHome, btnRecommendations, btnHistory, btnAbout, btnLogout;
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applyTheme(this);
         if (!AuthManager.getInstance(this).isLoggedIn()) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
@@ -33,78 +35,54 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        User currentUser = AuthManager.getInstance(this).getCurrentUser();
-
-        TextView tv = findViewById(R.id.tv_patient_welcome);
-        tv.setText("Bine ai venit, pacient " + currentUser.getFirstName() + " " + currentUser.getLastName());
-
-        btnHome = findViewById(R.id.btn_home);
-        btnRecommendations = findViewById(R.id.btn_recommendations);
-        btnHistory = findViewById(R.id.btn_history);
-        btnAbout = findViewById(R.id.btn_about);
-        btnLogout = findViewById(R.id.btn_logout);
-
-        // Încarcă fragmentul Home la pornire
-        if (savedInstanceState == null) {
-            loadFragment(new HomeFragment());
+        User user = AuthManager.getInstance(this).getCurrentUser();
+        if (user != null) {
+            TextView tv = findViewById(R.id.tv_patient_welcome);
+            tv.setText(getString(R.string.welcome_patient, user.getFirstName(), user.getLastName()));
         }
 
-        btnHome.setOnClickListener(v -> {
-            Log.d("MainActivity", "Buton Acasă apăsat");
-            loadFragment(new HomeFragment());
-        });
-        btnRecommendations.setOnClickListener(v -> {
-            Log.d("MainActivity", "Buton Recomandări apăsat");
-            loadFragment(new RecommendationsFragment());
-        });
-        btnHistory.setOnClickListener(v -> {
-            Log.d("MainActivity", "Buton Istoric apăsat");
-            loadFragment(new HistoryFragment());
-        });
-        btnAbout.setOnClickListener(v -> {
-            Log.d("MainActivity", "Buton Despre apăsat");
-            showAboutDialog();
-        });
-        btnLogout.setOnClickListener(v -> {
-            Log.d("MainActivity", "Buton Deconectare apăsat");
-            AuthManager.getInstance(this).logout();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
+        initNavigation();
+        
+        findViewById(R.id.btn_about).setOnClickListener(v -> showAbout());
+        findViewById(R.id.btn_settings).setOnClickListener(v -> 
+            startActivity(new Intent(this, SettingsActivity.class)));
+    }
+
+    private void initNavigation() {
+        bottomNav = findViewById(R.id.bottom_navigation);
+        if (getSupportFragmentManager().findFragmentById(R.id.fragment_container) == null) {
+            load(new HomeFragment());
+        }
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) load(new HomeFragment());
+            else if (id == R.id.nav_recommendations) load(new RecommendationsFragment());
+            else if (id == R.id.nav_history) load(new HistoryFragment());
+            return true;
         });
     }
 
-    private void loadFragment(Fragment fragment) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, fragment);
-        transaction.commit();
+    private void load(Fragment f) {
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (current != null && current.getClass().equals(f.getClass())) return;
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, f)
+                .commit();
     }
 
-    public void showAboutDialog() {
-        String versionName = "1.0"; // poti lua din BuildConfig
+    private void showAbout() {
+        String ver = "1.0";
         try {
-            versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-        } catch (Exception e) { }
-
-        String message = "CardioFlow - Sistem purtabil de supraveghere a stării de sănătate\n\n" +
-                "Versiune: " + versionName + "\n" +
-                "© 2026 Grupa 6, Echipa 2\n\n" +
-                "Programator șef: Toma D. Mihai-Alex\n" +
-                "Adjunct: Todică O. Ovidiu-Victor-Nicușor\n" +
-                "Secretar: Stan D. Alexandru-Daniel\n\n" +
-                "Echipe:\n" +
-                "• Web: Sichigea M. Marius-Claudiu, Stănescu E. A. Vlad\n" +
-                "• Cloud: Tivig G. Ion-Damian, Șandru P. Petru-Alexandru\n" +
-                "• Embedded: Țivlică G. Paul-Matei, Stavenschi Maxim, Todică O. Ovidiu-Victor-Nicușor\n" +
-                "• Mobile: Stan D. Alexandru-Daniel, Toma D. Mihai-Alex, Tătaru F. Vlad-Mihai\n\n" +
-                "Acest sistem nu înlocuiește un diagnostic medical.\n" +
-                "Datele sunt preluate de la senzori și sunt doar orientative.\n\n" +
-                "Pentru detalii, consultați documentația tehnică.";
+            ver = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception ignored) { }
 
         new AlertDialog.Builder(this)
-                .setTitle("Despre CardioFlow")
+                .setTitle(R.string.about_title)
                 .setIcon(android.R.drawable.ic_dialog_info)
-                .setMessage(message)
-                .setPositiveButton("OK", null)
+                .setMessage(getString(R.string.about_message, ver))
+                .setPositiveButton(R.string.btn_confirm, null)
                 .show();
     }
 }

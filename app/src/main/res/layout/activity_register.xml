@@ -2,47 +2,82 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="32dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Înregistrare cont"
-            android:textSize="24sp"
+            android:text="@string/registration_title"
+            android:textSize="32sp"
             android:textStyle="bold"
-            android:textColor="@android:color/holo_red_light"
-            android:layout_marginBottom="24dp" />
+            android:textColor="#B71C1C"
+            android:shadowColor="#40000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/registration_subtitle"
+            android:textSize="16sp"
+            android:textColor="#616161"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="32dp" />
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_first_name"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Prenume">
+            android:layout_marginBottom="16dp"
+            android:hint="Prenume"
+            app:boxStrokeColor="#B71C1C"
+            app:hintTextColor="#B71C1C"
+            app:errorEnabled="true">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_first_name"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_last_name"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nume">
+            android:layout_marginBottom="16dp"
+            android:hint="Nume"
+            app:boxStrokeColor="#B71C1C"
+            app:hintTextColor="#B71C1C"
+            app:errorEnabled="true">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_last_name"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_email"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email">
+            android:layout_marginBottom="16dp"
+            android:hint="Email"
+            app:boxStrokeColor="#B71C1C"
+            app:hintTextColor="#B71C1C"
+            app:errorEnabled="true">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_email"
                 android:layout_width="match_parent"
@@ -51,10 +86,16 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_password"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:hint="Parolă"
-            app:endIconMode="password_toggle">
+            app:endIconMode="password_toggle"
+            app:boxStrokeColor="#B71C1C"
+            app:hintTextColor="#B71C1C"
+            app:errorEnabled="true">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password"
                 android:layout_width="match_parent"
@@ -63,10 +104,16 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_confirm_password"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:hint="Confirmă parola"
-            app:endIconMode="password_toggle">
+            app:endIconMode="password_toggle"
+            app:boxStrokeColor="#B71C1C"
+            app:hintTextColor="#B71C1C"
+            app:errorEnabled="true">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_confirm_password"
                 android:layout_width="match_parent"
@@ -77,21 +124,30 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Rol"
-            android:layout_marginTop="12dp" />
+            android:text="@string/select_role"
+            android:textSize="14sp"
+            android:textColor="#616161"
+            android:layout_marginBottom="8dp" />
 
         <Spinner
             android:id="@+id/spinner_role"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
+            android:layout_height="56dp"
+            android:background="@drawable/bg_icon_circle"
+            android:layout_marginBottom="32dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_register"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:text="Înregistrare"
-            android:backgroundTint="@android:color/holo_red_light" />
+            android:textSize="18sp"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#B71C1C"
+            app:elevation="4dp" />
 
     </LinearLayout>
 </ScrollView>

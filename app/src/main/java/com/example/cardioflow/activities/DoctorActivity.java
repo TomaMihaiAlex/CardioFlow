@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.cardioflow.R;
+import com.example.cardioflow.utils.ThemeHelper;
 import com.example.cardioflow.auth.AuthManager;
 import com.example.cardioflow.adapters.PatientAdapter;
 import com.example.cardioflow.fragments.PatientDetailsFragment;
@@ -19,7 +20,7 @@ import com.example.cardioflow.models.User;
 import java.util.List;
 
 public class DoctorActivity extends AppCompatActivity {
-    private Button btnAbout, btnLogout;
+    private Button btnAbout, btnSettings;
     private RecyclerView rvPatients;
     private PatientAdapter adapter;
     private List<User> patientList;
@@ -27,6 +28,7 @@ public class DoctorActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applyTheme(this);
         AuthManager authManager = AuthManager.getInstance(this);
         if (!authManager.isLoggedIn()) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -37,40 +39,56 @@ public class DoctorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_doctor);
 
-        User currentDoctor = authManager.getCurrentUser();
-        String doctorId = currentDoctor.getId(); // asigură-te că există getId() în User
-        patientList = authManager.getPatientsForDoctor(doctorId);
-
         rvPatients = findViewById(R.id.rv_patients);
         detailsContainer = findViewById(R.id.details_container);
-        rvPatients.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new PatientAdapter(patientList, patient -> {
-            // Setează containerul vizibil înainte de a încărca fragmentul
-            detailsContainer.setVisibility(View.VISIBLE);
+        btnAbout = findViewById(R.id.btn_doctor_about);
+        btnSettings = findViewById(R.id.btn_doctor_settings);
 
+        if (rvPatients == null) {
+            Log.e("DoctorActivity", "RecyclerView rv_patients not found!");
+        } else {
+            rvPatients.setLayoutManager(new LinearLayoutManager(this));
+        }
+
+        User currentDoctor = authManager.getCurrentUser();
+        if (currentDoctor == null) {
+            Log.e("DoctorActivity", "Current doctor is null!");
+            finish();
+            return;
+        }
+        String doctorId = currentDoctor.getId(); 
+        patientList = authManager.getPatientsForDoctor(doctorId);
+
+        adapter = new PatientAdapter(patientList, patient -> {
+            if (detailsContainer != null) {
+                detailsContainer.setVisibility(View.VISIBLE);
+            }
             PatientDetailsFragment fragment = PatientDetailsFragment.newInstance(patient.getId());
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.details_container, fragment)
                     .commit();
         });
-        rvPatients.setAdapter(adapter);
+
+        if (rvPatients != null) {
+            rvPatients.setAdapter(adapter);
+        }
 
         TextView tv = findViewById(R.id.tv_doctor_welcome);
-        tv.setText("Bine ai venit, doctor " + currentDoctor.getFirstName() + " " + currentDoctor.getLastName() + "! Aici vei vedea lista pacienților.");
+        if (tv != null) {
+            tv.setText(getString(R.string.welcome_doctor, currentDoctor.getFirstName(), currentDoctor.getLastName()));
+        }
 
-        btnAbout = findViewById(R.id.btn_about);
-        btnLogout = findViewById(R.id.btn_logout);
-
-        btnAbout.setOnClickListener(v -> {
-            Log.d("DoctorActivity", "Buton Despre apăsat");
-            showAboutDialog();
-        });
-        btnLogout.setOnClickListener(v -> {
-            Log.d("DoctorActivity", "Buton Deconectare apăsat");
-            authManager.logout();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-        });
+        if (btnAbout != null) {
+            btnAbout.setOnClickListener(v -> {
+                Log.d("DoctorActivity", "Buton Despre apăsat");
+                showAboutDialog();
+            });
+        }
+        if (btnSettings != null) {
+            btnSettings.setOnClickListener(v -> {
+                startActivity(new Intent(this, SettingsActivity.class));
+            });
+        }
     }
 
     public void showAboutDialog() {
@@ -79,26 +97,11 @@ public class DoctorActivity extends AppCompatActivity {
             versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (Exception e) { }
 
-        String message = "CardioFlow - Sistem purtabil de supraveghere a stării de sănătate\n\n" +
-                "Versiune: " + versionName + "\n" +
-                "© 2026 Grupa 6, Echipa 2\n\n" +
-                "Programator șef: Toma D. Mihai-Alex\n" +
-                "Adjunct: Todică O. Ovidiu-Victor-Nicușor\n" +
-                "Secretar: Stan D. Alexandru-Daniel\n\n" +
-                "Echipe:\n" +
-                "• Web: Sichigea M. Marius-Claudiu, Stănescu E. A. Vlad\n" +
-                "• Cloud: Tivig G. Ion-Damian, Șandru P. Petru-Alexandru\n" +
-                "• Embedded: Țivlică G. Paul-Matei, Stavenschi Maxim, Todică O. Ovidiu-Victor-Nicușor\n" +
-                "• Mobile: Stan D. Alexandru-Daniel, Toma D. Mihai-Alex, Tătaru F. Vlad-Mihai\n\n" +
-                "Acest sistem nu înlocuiește un diagnostic medical.\n" +
-                "Datele sunt preluate de la senzori și sunt doar orientative.\n\n" +
-                "Pentru detalii, consultați documentația tehnică.";
-
         new AlertDialog.Builder(this)
-                .setTitle("Despre CardioFlow")
+                .setTitle(R.string.about_title)
                 .setIcon(android.R.drawable.ic_dialog_info)
-                .setMessage(message)
-                .setPositiveButton("OK", null)
+                .setMessage(getString(R.string.about_message, versionName))
+                .setPositiveButton(R.string.btn_confirm, null)
                 .show();
     }
 }

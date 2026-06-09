@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.cardioflow.R;
 import com.example.cardioflow.data.DataManager;
+import com.example.cardioflow.database.DatabaseManager;
+import com.example.cardioflow.database.FirebaseManager;
 import com.example.cardioflow.models.Recommendation;
 import com.example.cardioflow.models.User;
 import com.example.cardioflow.auth.AuthManager;
@@ -70,14 +72,18 @@ public class RecommendationsFragmentDoctor extends Fragment {
         String durationStr = etDuration.getText().toString().trim();
         String instructions = etInstructions.getText().toString().trim();
         if (type.isEmpty() || durationStr.isEmpty()) {
-            Toast.makeText(getContext(), "Completați tipul și durata", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.error_fill_fields, Toast.LENGTH_SHORT).show();
             return;
         }
         int duration = Integer.parseInt(durationStr);
         User doctor = AuthManager.getInstance(requireContext()).getCurrentUser();
-        Recommendation rec = new Recommendation(UUID.randomUUID().toString(), patientId, doctor.getId(), type, duration, instructions, "medium");
-        DataManager.getInstance(requireContext()).addRecommendation(rec); // necesită implementare
-        Toast.makeText(getContext(), "Recomandare adăugată", Toast.LENGTH_SHORT).show();
+        String doctorId = doctor != null ? doctor.getId() : "unknown";
+        Recommendation rec = new Recommendation(UUID.randomUUID().toString(), patientId, doctorId, type, duration, instructions, "medium");
+        
+        DatabaseManager.getInstance(requireContext()).insertRecommendation(rec);
+        FirebaseManager.getInstance().saveRecommendation(rec);
+
+        Toast.makeText(getContext(), R.string.rec_added_msg, Toast.LENGTH_SHORT).show();
         etType.setText("");
         etDuration.setText("");
         etInstructions.setText("");
@@ -95,8 +101,8 @@ public class RecommendationsFragmentDoctor extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Recommendation r = list.get(position);
-            holder.text1.setText(String.format("%s - %d min/zi", r.getType(), r.getDailyDurationMin()));
-            holder.text2.setText(r.getInstructions().isEmpty() ? "Fără instrucțiuni" : r.getInstructions());
+            holder.text1.setText(String.format("%s - %s", r.getType(), getString(R.string.rec_duration_format, r.getDailyDurationMin())));
+            holder.text2.setText(r.getInstructions().isEmpty() ? getString(R.string.rec_empty_instructions) : r.getInstructions());
         }
         @Override
         public int getItemCount() { return list.size(); }

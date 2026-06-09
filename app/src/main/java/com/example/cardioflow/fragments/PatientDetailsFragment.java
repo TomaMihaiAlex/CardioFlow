@@ -48,7 +48,7 @@ public class PatientDetailsFragment extends Fragment {
 
         // Leagă TabLayout de ViewPager2 folosind TabLayoutMediator
         new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> tab.setText(PatientDetailsPagerAdapter.getTabTitle(position))
+                (tab, position) -> tab.setText(PatientDetailsPagerAdapter.getTabTitle(position, requireContext()))
         ).attach();
 
         return view;

@@ -1,14 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
+    // alias(libs.plugins.google.services) // FIXME: Missing google-services.json
 }
 
 android {
     namespace = "com.example.cardioflow"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.cardioflow"
@@ -45,12 +42,20 @@ dependencies {
     implementation(libs.material)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation(libs.mpandroidchart)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.work.runtime)
+    implementation("com.google.code.gson:gson:2.10.1")
+    
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.fragment:fragment:1.6.2")
-    implementation("com.google.code.gson:gson:2.10.1")
 }

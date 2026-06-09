@@ -3,16 +3,14 @@ package com.example.cardioflow.models;
 public class User {
     private String id;
     private String email;
-    private String password; // în realitate hash, acum plain
-    private String role;     // "pacient" sau "medic"
+    private String password;
+    private String role;
     private String firstName;
     private String lastName;
-    private String doctorId;  // pentru pacient: id-ul medicului asociat
+    private String doctorId;
 
-    // Constructor gol necesar pentru Gson
     public User() {}
 
-    // Constructor cu parametri
     public User(String id, String email, String password, String role, String firstName, String lastName, String doctorId) {
         this.id = id;
         this.email = email;
@@ -23,7 +21,6 @@ public class User {
         this.doctorId = doctorId;
     }
 
-    // Gettere și settere
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getEmail() { return email; }
