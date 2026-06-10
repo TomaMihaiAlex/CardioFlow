@@ -157,6 +157,55 @@ public class DatabaseManager {
         db.delete("recommendations", "id = ?", new String[]{id});
     }
 
+    // Offline Requests (coadă pentru sincronizare cloud când nu există conexiune / Firebase neconfigurat)
+    public void insertOfflineRequest(String collection, String type, String payload) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("url", collection);   // numele colecției Firestore (ex: "sensorData", "alerts")
+        values.put("method", type);      // tipul obiectului serializat (ex: "Measurement", "Alert")
+        values.put("payload", payload);  // JSON-ul obiectului
+        values.put("retry_count", 0);
+        db.insert("offline_requests", null, values);
+    }
+
+    public List<OfflineRequest> getOfflineRequests() {
+        List<OfflineRequest> list = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.query("offline_requests", null, null, null, null, null, "id ASC");
+        if (cursor.moveToFirst()) {
+            do {
+                OfflineRequest r = new OfflineRequest();
+                r.id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                r.collection = cursor.getString(cursor.getColumnIndexOrThrow("url"));
+                r.type = cursor.getString(cursor.getColumnIndexOrThrow("method"));
+                r.payload = cursor.getString(cursor.getColumnIndexOrThrow("payload"));
+                r.retryCount = cursor.getInt(cursor.getColumnIndexOrThrow("retry_count"));
+                list.add(r);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return list;
+    }
+
+    public void deleteOfflineRequest(int id) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.delete("offline_requests", "id = ?", new String[]{String.valueOf(id)});
+    }
+
+    public void incrementOfflineRetry(int id) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.execSQL("UPDATE offline_requests SET retry_count = retry_count + 1 WHERE id = ?",
+                new Object[]{id});
+    }
+
+    public static class OfflineRequest {
+        public int id;
+        public String collection;
+        public String type;
+        public String payload;
+        public int retryCount;
+    }
+
     public void clearAllData() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.execSQL("DELETE FROM sensor_data");
