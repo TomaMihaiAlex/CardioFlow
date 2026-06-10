@@ -4,8 +4,9 @@
 
 AlertResult checkThresholds(const Measurement& m, const Thresholds& t) {
     AlertResult result{};
-    if (!m.valid) return result;
-
+    // Per-field gating: each sensor's alert fires independently based on its own
+    // sentinel guard below. A missing sensor (e.g. MAX30102 → HR/SpO2 = -1) no
+    // longer suppresses alerts from sensors that ARE working (e.g. temperature).
     if (m.heartRate != -1 && m.heartRate > t.hrMax) {
         result.triggered = true;
         strncpy(result.type, "high_heart_rate", sizeof(result.type) - 1);

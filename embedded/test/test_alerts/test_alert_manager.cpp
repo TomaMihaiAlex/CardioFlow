@@ -86,12 +86,16 @@ void test_invalid_sensor_does_not_trigger() {
     TEST_ASSERT_FALSE(r.triggered);
 }
 
-void test_measurement_valid_false_does_not_trigger() {
-    Measurement m = makeMeasurement(120, 85, 38.5f);  // all values out of range
+void test_missing_pulse_still_alerts_on_temp() {
+    // Per-field gating: pulse sensor absent (HR/SpO2 = -1, so valid=false) must
+    // NOT suppress a temperature alert from the working DHT sensor.
+    Measurement m = makeMeasurement(-1, -1, 38.5f);  // no pulse, temp too high
     m.valid = false;
     Thresholds t = makeThresholds();
     AlertResult r = checkThresholds(m, t);
-    TEST_ASSERT_FALSE(r.triggered);
+    TEST_ASSERT_TRUE(r.triggered);
+    TEST_ASSERT_EQUAL_STRING("high_temp", r.type);
+    TEST_ASSERT_EQUAL_STRING("medium", r.severity);
 }
 
 void test_hr_beats_spo2_in_priority() {
@@ -146,7 +150,7 @@ int main() {
     RUN_TEST(test_invalid_sensor_does_not_trigger);
     RUN_TEST(test_hr_at_exact_boundary_does_not_trigger);
     RUN_TEST(test_build_alert_json_format);
-    RUN_TEST(test_measurement_valid_false_does_not_trigger);
+    RUN_TEST(test_missing_pulse_still_alerts_on_temp);
     RUN_TEST(test_hr_beats_spo2_in_priority);
     RUN_TEST(test_spo2_beats_temp_in_priority);
     return UNITY_END();
