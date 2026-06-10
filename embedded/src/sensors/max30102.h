@@ -10,4 +10,8 @@ class Max30102Sensor {
 public:
     bool begin();
     PulseReading read();
+    bool isPresent() const { return _present; }
+
+private:
+    bool _present = false;   // true doar dacă begin() a găsit senzorul pe I2C
 };
