@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -180,6 +181,9 @@ public class HomeFragment extends Fragment {
             btnStartActivity.setEnabled(true);
         }
     }
+
+    private void updateLastValues(int hr, int spo2, double temp, double hum) {
+        updateActivityStatus();
         tvLastHr.setText(getString(R.string.hr_format, hr));
         tvLastSpo2.setText(getString(R.string.spo2_format, spo2));
         tvLastTemp.setText(getString(R.string.temp_format, temp));
