@@ -14,6 +14,10 @@ export default function PacientDashboard() {
   const { state, activeRecord, appointmentRequest, userData } = usePatientState();
   const [tab, setTab] = useState(0);
 
+  // Cerere auto-creată la înregistrare, fără simptome → pacientul încă o completează;
+  // nu arătăm banner-ul „în procesare" care ar contrazice formularul.
+  const awaitingDetails = appointmentRequest?.autoCreated && !(appointmentRequest.symptoms || '').trim();
+
   if (state === PS.LOADING) return <LoadingSpinner />;
 
   // ── Stări pre-monitorizare: fără fișă / cerere în curs ────────────────────
@@ -23,7 +27,7 @@ export default function PacientDashboard() {
         <Navbar title="Panou Pacient" />
 
         {/* Banner stare curentă */}
-        {state !== PS.NO_RECORD && (
+        {state !== PS.NO_RECORD && !awaitingDetails && (
           <StatusBanner state={state} request={appointmentRequest} />
         )}
 

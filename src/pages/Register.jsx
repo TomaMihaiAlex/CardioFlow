@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ref, set } from 'firebase/database';
+import { ref, set, push, update } from 'firebase/database';
 import { registerUser, db } from '../firebase';
 
 const FIREBASE_ERRORS = {
@@ -38,13 +38,40 @@ export default function Register() {
       const credential = await registerUser(email, form.password);
       const uid = credential.user.uid;
 
-      await set(ref(db, `users/${uid}`), {
+      const userRecord = {
         uid,
         email,
         role:    form.role,
         prenume: form.prenume.trim(),
         nume:    form.nume.trim(),
-      });
+      };
+
+      if (form.role === 'pacient') {
+        // Cont nou de pacient → cerere 'pending' auto-creată, ca recepția să-l
+        // vadă imediat în tab-ul „Noi". Pacientul completează simptomele ulterior:
+        // BookAppointment ACTUALIZEAZĂ această cerere în loc să creeze alta.
+        const reqRef = push(ref(db, 'appointmentRequests'));
+        await update(ref(db), {
+          [`users/${uid}`]: userRecord,
+          [`appointmentRequests/${reqRef.key}`]: {
+            patientUid:    uid,
+            email,
+            prenume:       form.prenume.trim(),
+            nume:          form.nume.trim(),
+            varsta:        null,
+            telefon:       '',
+            symptoms:      '',
+            status:        'pending',
+            autoCreated:   true,
+            medicId:       null,
+            medicNume:     null,
+            scheduledSlot: null,
+            creatLa:       Date.now(),
+          },
+        });
+      } else {
+        await set(ref(db, `users/${uid}`), userRecord);
+      }
 
       const dest = { medic: '/medic', pacient: '/pacient', receptionist: '/receptionist' };
       navigate(dest[form.role] || '/pacient', { replace: true });

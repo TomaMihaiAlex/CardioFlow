@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ref, push, set } from 'firebase/database';
+import { ref, push, set, update } from 'firebase/database';
 import { db } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
 import { PS } from '../../hooks/usePatientState';
@@ -36,14 +36,18 @@ export default function BookAppointment({ appointmentRequest, state }) {
     }
   }, [userData]);
 
+  const req = appointmentRequest;
+  // Cererea auto-creată la înregistrare nu are încă simptome → lăsăm pacientul
+  // să o completeze (form), apoi o ACTUALIZĂM în loc să creăm una nouă.
+  const needsDetails = req?.autoCreated && !(req.symptoms || '').trim();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.symptoms.trim()) { setError('Descrieți simptomele.'); return; }
     setSaving(true);
     setError('');
     try {
-      const newRef = push(ref(db, 'appointmentRequests'));
-      await set(newRef, {
+      const payload = {
         patientUid:    user.uid,
         email:         user.email.toLowerCase(),
         prenume:       form.prenume.trim(),
@@ -52,11 +56,21 @@ export default function BookAppointment({ appointmentRequest, state }) {
         telefon:       form.telefon.trim(),
         symptoms:      form.symptoms.trim(),
         status:        'pending',
-        medicId:       null,
-        medicNume:     null,
-        scheduledSlot: null,
-        creatLa:       Date.now(),
-      });
+        autoCreated:   false,
+      };
+      if (req?.id) {
+        // completăm cererea existentă (auto-creată la înregistrare)
+        await update(ref(db, `appointmentRequests/${req.id}`), payload);
+      } else {
+        const newRef = push(ref(db, 'appointmentRequests'));
+        await set(newRef, {
+          ...payload,
+          medicId:       null,
+          medicNume:     null,
+          scheduledSlot: null,
+          creatLa:       Date.now(),
+        });
+      }
       setSubmitted(true);
     } catch (e) {
       setError('Eroare la trimitere. Reîncercați.');
@@ -66,9 +80,8 @@ export default function BookAppointment({ appointmentRequest, state }) {
     }
   };
 
-  // Dacă există deja o cerere, arătăm statusul ei
-  const req = appointmentRequest;
-  const showStatus = req || submitted;
+  // Afișăm statusul doar dacă există o cerere completată (sau tocmai trimisă).
+  const showStatus = (req && !needsDetails) || submitted;
 
   if (showStatus) {
     const cfg  = STATUS_CFG[req?.status || 'pending'];

@@ -172,7 +172,9 @@ function RequestCard({ r, selected, onClick }) {
           {s.label}
         </span>
       </div>
-      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{r.symptoms || r.descriereProblema}</p>
+      <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+        {r.symptoms || r.descriereProblema || (r.autoCreated ? '🆕 Cont nou — fără detalii completate' : '')}
+      </p>
       <p className="text-xs text-slate-300 mt-1.5">{time}</p>
     </button>
   );
@@ -265,7 +267,9 @@ function RequestDetail({ request: r, medici, receptionistUid, onClose }) {
       {/* Simptome */}
       <div className="bg-white rounded-xl border border-slate-100 p-5">
         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Simptome / Motiv</p>
-        <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{r.symptoms || r.descriereProblema}</p>
+        <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
+          {r.symptoms || r.descriereProblema || (r.autoCreated ? '🆕 Cont nou — pacientul nu a completat încă detaliile cererii.' : '—')}
+        </p>
       </div>
 
       {/* Alocare medic + calendar */}
