@@ -142,12 +142,20 @@
                         android:backgroundTint="?attr/colorPrimary"
                         android:textColor="?attr/colorOnPrimary" />
 
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_simulation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Mod Simulare Date"
+                        android:layout_marginBottom="12dp"
+                        android:textColor="?attr/colorOnSurface" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_simulate_ble"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Simulează conexiune BLE"
+                        android:text="Configurare conexiune BLE"
                         android:textColor="?attr/colorPrimary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

@@ -26,6 +26,8 @@ import org.robolectric.shadows.ShadowActivity;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Field;
+
 /**
  * Robolectric tests for LoginActivity UI behaviour.
  *
@@ -37,26 +39,36 @@ import static org.junit.Assert.*;
  *   - Auto-redirect when a session is already active
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 33)
+@Config(sdk = 35)
 public class LoginActivityTest {
 
     @Before
     public void setUp() {
         // Clear any lingering auth state between tests.
-        AuthManager.resetInstance();
+        resetAuthManagerSingleton();
         AuthManager.getInstance(ApplicationProvider.getApplicationContext()).logout();
     }
 
     @After
     public void tearDown() {
         AuthManager.getInstance(ApplicationProvider.getApplicationContext()).logout();
-        AuthManager.resetInstance();
+        resetAuthManagerSingleton();
     }
 
     // ============================================================
     // Field validation — empty inputs must show errors, not crash
     // ============================================================
 
+    private void resetAuthManagerSingleton() {
+        try {
+            Field instance = AuthManager.class.getDeclaredField("instance");
+            instance.setAccessible(true);
+            instance.set(null, null);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+    
     @Test
     public void performLogin_emptyEmail_showsEmailError() {
         try (ActivityScenario<LoginActivity> scenario = ActivityScenario.launch(LoginActivity.class)) {

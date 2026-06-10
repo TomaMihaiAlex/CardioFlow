@@ -5,6 +5,13 @@ public class AppConstants {
     public static final String PREFS_NAME = "CardioFlowPrefs";
     public static final String KEY_BLE_INTERVAL = "ble_interval";
     public static final String KEY_THEME = "ui_theme";
+    public static final String KEY_LAST_MAC = "last_ble_mac";
+    public static final String KEY_SIMULATION_MODE = "simulation_mode";
+
+    // BLE UUIDs
+    public static final String UART_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
+    public static final String TX_CHAR_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    public static final String CCCD_UUID = "00002902-0000-1000-8000-00805f9b34fb";
     
     // Theme values
     public static final int THEME_STANDARD = 0;

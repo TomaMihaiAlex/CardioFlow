@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
  * without needing an emulator, while keeping tests in the JVM.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 33, packageName = "com.example.cardioflow")
+@Config(sdk = 33)
 public class AuthManagerTest {
 
     private AuthManager authManager;

@@ -19,6 +19,7 @@ import com.example.cardioflow.database.DatabaseManager;
 import com.example.cardioflow.models.User;
 import com.example.cardioflow.utils.AppConstants;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 public class SettingsActivity extends AppCompatActivity {
     private EditText etBleInterval;
@@ -26,6 +27,7 @@ public class SettingsActivity extends AppCompatActivity {
     private MaterialCardView cardPatientSettings;
     private RadioGroup rgTheme;
     private RadioButton rbStandard, rbLight, rbDark;
+    private SwitchMaterial switchSimulation;
     private SharedPreferences prefs;
 
     @Override
@@ -47,6 +49,7 @@ public class SettingsActivity extends AppCompatActivity {
         etBleInterval = findViewById(R.id.et_ble_interval);
         btnSave = findViewById(R.id.btn_save_settings);
         btnSimulate = findViewById(R.id.btn_simulate_ble);
+        switchSimulation = findViewById(R.id.switch_simulation);
         
         btnChangePassword = findViewById(R.id.btn_change_password_settings);
         btnClear = findViewById(R.id.btn_clear_data);
@@ -65,6 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         etBleInterval.setText(String.valueOf(prefs.getInt(AppConstants.KEY_BLE_INTERVAL, 10)));
+        switchSimulation.setChecked(prefs.getBoolean(AppConstants.KEY_SIMULATION_MODE, true));
 
         // Load current theme selection
         int currentTheme = prefs.getInt(AppConstants.KEY_THEME, AppConstants.THEME_STANDARD);
@@ -81,6 +85,18 @@ public class SettingsActivity extends AppCompatActivity {
             ThemeHelper.applyTheme(this);
         });
 
+        switchSimulation.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            prefs.edit().putBoolean(AppConstants.KEY_SIMULATION_MODE, isChecked).apply();
+            if (!isChecked) {
+                // If turning off simulation, user might want to connect to BLE
+                Toast.makeText(this, "Simulare dezactivată. Conectați senzorul BLE.", Toast.LENGTH_SHORT).show();
+            } else {
+                // If turning on simulation, stop BLE service
+                Intent stopBle = new Intent(this, com.example.cardioflow.services.BLEReceiverService.class);
+                stopService(stopBle);
+            }
+        });
+
         btnSave.setOnClickListener(v -> {
             String input = etBleInterval.getText().toString();
             if (!input.isEmpty()) {
@@ -91,7 +107,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         btnSimulate.setOnClickListener(v -> {
-            Toast.makeText(this, R.string.simulate_ble_msg, Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, DeviceScanActivity.class));
         });
 
         btnChangePassword.setOnClickListener(v -> {

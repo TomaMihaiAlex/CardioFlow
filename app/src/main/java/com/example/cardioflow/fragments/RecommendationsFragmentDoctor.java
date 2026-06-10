@@ -14,12 +14,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.cardioflow.R;
-import com.example.cardioflow.data.DataManager;
 import com.example.cardioflow.database.DatabaseManager;
 import com.example.cardioflow.database.FirebaseManager;
 import com.example.cardioflow.models.Recommendation;
 import com.example.cardioflow.models.User;
 import com.example.cardioflow.auth.AuthManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +28,8 @@ public class RecommendationsFragmentDoctor extends Fragment {
     private RecyclerView recyclerView;
     private EditText etType, etDuration, etInstructions;
     private Button btnAdd;
+    private List<Recommendation> recommendationsList = new ArrayList<>();
+    private RecommendationsAdapter adapter;
 
     public static RecommendationsFragmentDoctor newInstance(String patientId) {
         RecommendationsFragmentDoctor fragment = new RecommendationsFragmentDoctor();
@@ -56,63 +58,92 @@ public class RecommendationsFragmentDoctor extends Fragment {
         btnAdd = view.findViewById(R.id.btn_add);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        loadRecommendations();
+        adapter = new RecommendationsAdapter(recommendationsList);
+        recyclerView.setAdapter(adapter);
 
+        loadRecommendations();
         btnAdd.setOnClickListener(v -> addRecommendation());
         return view;
     }
 
     private void loadRecommendations() {
-        List<Recommendation> recs = DataManager.getInstance(requireContext()).getRecommendationsForPatient(patientId);
-        recyclerView.setAdapter(new RecommendationsAdapter(recs));
+        FirebaseManager.getInstance().listenForRecommendations(patientId, recommendations -> {
+            if (recommendations != null) {
+                recommendationsList.clear();
+                recommendationsList.addAll(recommendations);
+                adapter.notifyDataSetChanged();
+                
+                // Sync to local SQLite as well
+                DatabaseManager db = DatabaseManager.getInstance(requireContext());
+                for (Recommendation r : recommendations) {
+                    db.insertRecommendation(r);
+                }
+            }
+        });
     }
 
     private void addRecommendation() {
         String type = etType.getText().toString().trim();
         String durationStr = etDuration.getText().toString().trim();
         String instructions = etInstructions.getText().toString().trim();
+        
         if (type.isEmpty() || durationStr.isEmpty()) {
-            Toast.makeText(getContext(), R.string.error_fill_fields, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Completați toate câmpurile!", Toast.LENGTH_SHORT).show();
             return;
         }
+        
         int duration = Integer.parseInt(durationStr);
         User doctor = AuthManager.getInstance(requireContext()).getCurrentUser();
         String doctorId = doctor != null ? doctor.getId() : "unknown";
-        Recommendation rec = new Recommendation(UUID.randomUUID().toString(), patientId, doctorId, type, duration, instructions, "medium");
         
+        Recommendation rec = new Recommendation(
+                UUID.randomUUID().toString(), 
+                patientId, 
+                doctorId, 
+                type, 
+                duration, 
+                instructions, 
+                "medium"
+        );
+        
+        // Save to Local SQLite
         DatabaseManager.getInstance(requireContext()).insertRecommendation(rec);
+        
+        // Save to Firestore
         FirebaseManager.getInstance().saveRecommendation(rec);
 
-        Toast.makeText(getContext(), R.string.rec_added_msg, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Recomandare salvată!", Toast.LENGTH_SHORT).show();
         etType.setText("");
         etDuration.setText("");
         etInstructions.setText("");
-        loadRecommendations();
     }
 
     class RecommendationsAdapter extends RecyclerView.Adapter<RecommendationsAdapter.ViewHolder> {
         private List<Recommendation> list;
         RecommendationsAdapter(List<Recommendation> list) { this.list = list; }
+        
         @NonNull @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recommendation_doctor, parent, false);
             return new ViewHolder(v);
         }
+        
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Recommendation r = list.get(position);
             holder.tvType.setText(r.getType());
-            holder.tvDuration.setText(getString(R.string.rec_duration_format, r.getDailyDurationMin()));
-            holder.tvInstructions.setText(r.getInstructions().isEmpty() ? getString(R.string.rec_empty_instructions) : r.getInstructions());
+            holder.tvDuration.setText(r.getDailyDurationMin() + " min/zi");
+            holder.tvInstructions.setText(r.getInstructions());
             
             holder.btnDelete.setOnClickListener(v -> {
                 DatabaseManager.getInstance(requireContext()).deleteRecommendation(r.getRecommendationId());
                 FirebaseManager.getInstance().deleteRecommendation(r.getRecommendationId());
-                loadRecommendations();
             });
         }
+        
         @Override
         public int getItemCount() { return list.size(); }
+        
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvType, tvInstructions, tvDuration;
             View btnDelete;

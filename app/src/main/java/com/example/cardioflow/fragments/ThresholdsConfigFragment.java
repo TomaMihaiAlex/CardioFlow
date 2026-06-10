@@ -11,8 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.example.cardioflow.R;
-import com.example.cardioflow.data.DataManager;
+import com.example.cardioflow.database.FirebaseManager;
 import com.example.cardioflow.models.Thresholds;
+import com.example.cardioflow.data.DataManager;
 
 public class ThresholdsConfigFragment extends Fragment {
     private String patientId;
@@ -50,24 +51,29 @@ public class ThresholdsConfigFragment extends Fragment {
         etActivityInterval = view.findViewById(R.id.et_activity_interval);
         btnSave = view.findViewById(R.id.btn_save);
 
-        loadThresholds();
+        loadThresholdsFromFirestore();
+        
         btnSave.setOnClickListener(v -> saveThresholds());
         return view;
     }
 
-    private void loadThresholds() {
-        Thresholds t = DataManager.getInstance(requireContext()).getThresholdsForPatient(patientId);
-        if (t != null) {
-            etHrMin.setText(String.valueOf(t.getHrMin()));
-            etHrMax.setText(String.valueOf(t.getHrMax()));
-            etSpo2Min.setText(String.valueOf(t.getSpo2Min()));
-            etTempMin.setText(String.valueOf(t.getTempMin()));
-            etTempMax.setText(String.valueOf(t.getTempMax()));
-            etHumMin.setText(String.valueOf(t.getHumMin()));
-            etHumMax.setText(String.valueOf(t.getHumMax()));
-            etPersist.setText(String.valueOf(t.getPersistSeconds()));
-            etActivityInterval.setText(String.valueOf(t.getActivityIntervalMinutes()));
-        }
+    private void loadThresholdsFromFirestore() {
+        FirebaseManager.getInstance().listenForThresholds(patientId, thresholds -> {
+            if (thresholds != null && isAdded()) {
+                etHrMin.setText(String.valueOf(thresholds.getHrMin()));
+                etHrMax.setText(String.valueOf(thresholds.getHrMax()));
+                etSpo2Min.setText(String.valueOf(thresholds.getSpo2Min()));
+                etTempMin.setText(String.valueOf(thresholds.getTempMin()));
+                etTempMax.setText(String.valueOf(thresholds.getTempMax()));
+                etHumMin.setText(String.valueOf(thresholds.getHumMin()));
+                etHumMax.setText(String.valueOf(thresholds.getHumMax()));
+                etPersist.setText(String.valueOf(thresholds.getPersistSeconds()));
+                etActivityInterval.setText(String.valueOf(thresholds.getActivityIntervalMinutes()));
+                
+                // Sync locally
+                DataManager.getInstance(requireContext()).updateThresholds(thresholds);
+            }
+        });
     }
 
     private void saveThresholds() {
@@ -83,10 +89,16 @@ public class ThresholdsConfigFragment extends Fragment {
             t.setHumMax(Double.parseDouble(etHumMax.getText().toString()));
             t.setPersistSeconds(Integer.parseInt(etPersist.getText().toString()));
             t.setActivityIntervalMinutes(Integer.parseInt(etActivityInterval.getText().toString()));
+            
+            // Save to Firestore
+            FirebaseManager.getInstance().saveThresholds(t);
+            
+            // Local save (via DataManager)
             DataManager.getInstance(requireContext()).updateThresholds(t);
-            Toast.makeText(getContext(), R.string.config_saved, Toast.LENGTH_SHORT).show();
+            
+            Toast.makeText(getContext(), "Configurație salvată!", Toast.LENGTH_SHORT).show();
         } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), R.string.error_numeric_fields, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Eroare: Câmpuri numerice nevalide!", Toast.LENGTH_SHORT).show();
         }
     }
 }

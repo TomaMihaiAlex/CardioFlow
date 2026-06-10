@@ -28,10 +28,8 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.cardioflow.R;
 import com.example.cardioflow.activities.MainActivity;
-import com.example.cardioflow.auth.AuthManager;
 import com.example.cardioflow.database.DatabaseManager;
 import com.example.cardioflow.models.SensorReading;
-import com.example.cardioflow.models.User;
 import com.example.cardioflow.utils.AppConstants;
 import com.google.gson.Gson;
 
@@ -42,19 +40,19 @@ public class BLEReceiverService extends Service {
     private static final String CHANNEL_ID = "BLE_Service_Channel";
     private static final int NOTIFICATION_ID = 1001;
 
-    // UUIDs for ESP32 UART Service (Standard Nordic UART or similar)
-    private static final UUID UART_SERVICE_UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
-    private static final UUID TX_CHARACTERISTIC_UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
-    private static final UUID CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothGatt bluetoothGatt;
     private String deviceAddress;
-    private StringBuilder jsonBuffer = new StringBuilder();
-    private Gson gson = new Gson();
+    private final StringBuilder jsonBuffer = new StringBuilder();
+    private final Gson gson = new Gson();
     private DatabaseManager dbManager;
-    private Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final Handler reconnectHandler = new Handler(Looper.getMainLooper());
     private boolean isConnecting = false;
+    private boolean isUserDisconnected = false;
+
+    private static final UUID SERVICE_UUID = UUID.fromString(AppConstants.UART_SERVICE_UUID);
+    private static final UUID TX_CHAR_UUID = UUID.fromString(AppConstants.TX_CHAR_UUID);
+    private static final UUID CCCD_UUID = UUID.fromString(AppConstants.CCCD_UUID);
 
     @Override
     public void onCreate() {
@@ -67,20 +65,27 @@ public class BLEReceiverService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && "STOP".equals(intent.getAction())) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         startForeground(NOTIFICATION_ID, getNotification("Căutare dispozitiv..."));
 
         SharedPreferences prefs = getSharedPreferences(AppConstants.PREFS_NAME, MODE_PRIVATE);
-        deviceAddress = prefs.getString("last_ble_address", null);
-
+        
         if (intent != null && intent.hasExtra("device_address")) {
             deviceAddress = intent.getStringExtra("device_address");
-            prefs.edit().putString("last_ble_address", deviceAddress).apply();
+            prefs.edit().putString(AppConstants.KEY_LAST_MAC, deviceAddress).apply();
+        } else {
+            deviceAddress = prefs.getString(AppConstants.KEY_LAST_MAC, null);
         }
 
+        isUserDisconnected = false;
         if (deviceAddress != null) {
             connectToDevice(deviceAddress);
         } else {
-            updateNotification("Niciun dispozitiv salvat.");
+            updateNotification("Niciun dispozitiv selectat.");
         }
 
         return START_STICKY;
@@ -93,7 +98,7 @@ public class BLEReceiverService extends Service {
         isConnecting = true;
         updateNotification("Conectare la " + address + "...");
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-        bluetoothGatt = device.connectGatt(this, true, gattCallback); // Auto-connect true for stability
+        bluetoothGatt = device.connectGatt(this, false, gattCallback);
     }
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
@@ -103,14 +108,17 @@ public class BLEReceiverService extends Service {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 isConnecting = false;
                 Log.i(TAG, "Connected to GATT server.");
-                updateNotification("Conectat la ESP32");
+                updateNotification("Dispozitiv Conectat");
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 isConnecting = false;
                 Log.i(TAG, "Disconnected from GATT server.");
                 updateNotification("Deconectat. Reîncercare...");
                 jsonBuffer.setLength(0);
-                // The stack will try to reconnect automatically if autoConnect was true
+                
+                if (!isUserDisconnected) {
+                    reconnectHandler.postDelayed(() -> connectToDevice(deviceAddress), 5000);
+                }
             }
         }
 
@@ -118,14 +126,20 @@ public class BLEReceiverService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                BluetoothGattCharacteristic txChar = gatt.getService(UART_SERVICE_UUID)
-                        .getCharacteristic(TX_CHARACTERISTIC_UUID);
-                
-                gatt.setCharacteristicNotification(txChar, true);
-                
-                BluetoothGattDescriptor descriptor = txChar.getDescriptor(CCCD_UUID);
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                gatt.writeDescriptor(descriptor);
+                try {
+                    BluetoothGattCharacteristic txChar = gatt.getService(SERVICE_UUID)
+                            .getCharacteristic(TX_CHAR_UUID);
+                    
+                    gatt.setCharacteristicNotification(txChar, true);
+                    
+                    BluetoothGattDescriptor descriptor = txChar.getDescriptor(CCCD_UUID);
+                    if (descriptor != null) {
+                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                        gatt.writeDescriptor(descriptor);
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error setting up notifications: " + e.getMessage());
+                }
             }
         }
 
@@ -135,27 +149,26 @@ public class BLEReceiverService extends Service {
             jsonBuffer.append(part);
             
             String fullString = jsonBuffer.toString();
-            if (fullString.contains("{") && fullString.contains("}")) {
-                // Try to find a complete JSON object
-                int start = fullString.indexOf("{");
-                int end = fullString.lastIndexOf("}");
-                if (end > start) {
-                    String completeJson = fullString.substring(start, end + 1);
-                    parseAndStoreData(completeJson);
-                    jsonBuffer.delete(0, end + 1);
+            int startIdx;
+            while ((startIdx = fullString.indexOf("{")) != -1) {
+                int endIdx = fullString.indexOf("}", startIdx);
+                if (endIdx != -1) {
+                    String completeJson = fullString.substring(startIdx, endIdx + 1);
+                    parseAndProcess(completeJson);
+                    fullString = fullString.substring(endIdx + 1);
+                    jsonBuffer.setLength(0);
+                    jsonBuffer.append(fullString);
+                } else {
+                    break;
                 }
             }
         }
     };
 
-    private void parseAndStoreData(String json) {
+    private void parseAndProcess(String json) {
         try {
             SensorReading reading = gson.fromJson(json, SensorReading.class);
             if (reading != null && reading.sensors != null) {
-                User user = AuthManager.getInstance(this).getCurrentUser();
-                String patientId = (user != null) ? user.getId() : "1";
-
-                // Map to existing database structure
                 dbManager.insertSensorData(
                         reading.sensors.heartRate,
                         reading.sensors.spo2,
@@ -163,7 +176,6 @@ public class BLEReceiverService extends Service {
                         reading.sensors.humidity
                 );
 
-                // Broadcast update for UI
                 Intent intent = new Intent("com.example.cardioflow.BLE_DATA_RECEIVED");
                 intent.putExtra("heartRate", reading.sensors.heartRate);
                 intent.putExtra("spo2", reading.sensors.spo2);
@@ -171,11 +183,9 @@ public class BLEReceiverService extends Service {
                 intent.putExtra("hum", reading.sensors.humidity);
                 intent.putExtra("leadsOff", reading.hardwareStatus != null && reading.hardwareStatus.ecgLeadsOff);
                 sendBroadcast(intent);
-                
-                Log.d(TAG, "Data saved and broadcasted: " + json);
             }
         } catch (Exception e) {
-            Log.e(TAG, "JSON Parse Error: " + e.getMessage());
+            Log.e(TAG, "JSON error: " + e.getMessage());
         }
     }
 
@@ -195,10 +205,11 @@ public class BLEReceiverService extends Service {
                 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("CardioFlow BLE")
+                .setContentTitle("CardioFlow Live")
                 .setContentText(text)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent)
+                .setOngoing(true)
                 .build();
     }
 
@@ -212,16 +223,16 @@ public class BLEReceiverService extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public void onDestroy() {
-        super.onDestroy();
+        isUserDisconnected = true;
+        reconnectHandler.removeCallbacksAndMessages(null);
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
             bluetoothGatt.close();
         }
+        super.onDestroy();
     }
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    public IBinder onBind(Intent intent) { return null; }
 }
