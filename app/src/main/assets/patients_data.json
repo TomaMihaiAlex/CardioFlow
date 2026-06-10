@@ -34,15 +34,15 @@
   "thresholds": [
     {
       "patientId": "1",
-      "hr_min": 50,
-      "hr_max": 100,
-      "spo2_min": 90,
-      "temp_min": 35.5,
-      "temp_max": 37.5,
-      "hum_min": 30,
-      "hum_max": 70,
-      "persist_seconds": 10,
-      "activity_interval_minutes": 5
+      "hrMin": 50,
+      "hrMax": 100,
+      "spo2Min": 90,
+      "tempMin": 35.5,
+      "tempMax": 37.5,
+      "humMin": 30,
+      "humMax": 70,
+      "persistSeconds": 10,
+      "activityIntervalMinutes": 5
     }
   ]
 }

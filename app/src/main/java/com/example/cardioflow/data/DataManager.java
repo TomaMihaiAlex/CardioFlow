@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataManager {
+    static void resetInstance() { instance = null; }
     private static DataManager instance;
     private Context context;
     private List<Measurement> allMeasurements;
@@ -117,6 +118,7 @@ public class DataManager {
         result.addAll(DatabaseManager.getInstance(context).getRecommendationsForPatient(patientId));
         return result;
     }
+
 
     public Thresholds getThresholdsForPatient(String patientId) {
         for (Thresholds t : allThresholds) {

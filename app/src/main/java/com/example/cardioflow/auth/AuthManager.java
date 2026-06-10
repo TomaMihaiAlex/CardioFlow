@@ -30,6 +30,7 @@ public class AuthManager {
         loadUsers();
     }
 
+
     private FirebaseAuth safeGetFirebaseAuth() {
         try {
             return FirebaseAuth.getInstance();
@@ -44,7 +45,7 @@ public class AuthManager {
         }
         return instance;
     }
-
+    public static void resetInstance() { instance = null; }
     private void loadUsers() {
         try {
             InputStream is = context.getAssets().open("users.json");
