@@ -1,6 +1,10 @@
 package com.example.cardioflow.fragments;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,11 +18,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.cardioflow.R;
+import com.example.cardioflow.activities.DeviceScanActivity;
 import com.example.cardioflow.auth.AuthManager;
 import com.example.cardioflow.data.DataManager;
 import com.example.cardioflow.database.DatabaseManager;
@@ -36,20 +42,17 @@ import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class HomeFragment extends Fragment {
 
     private TextView tvLastHr, tvLastSpo2, tvLastTemp, tvLastHum, tvActivityCountdown, tvAlarmStatus;
-    private Button btnStartActivity;
+    private Button btnStartActivity, btnConnectBle;
     private LineChart chartHr;
     private Handler handler = new Handler(Looper.getMainLooper());
-    private Random random = new Random();
     private DatabaseManager dbManager;
     private Thresholds userThresholds;
     private User currentUser;
 
-    private static final int SIMULATION_INTERVAL_MS = AppConstants.SIMULATION_INTERVAL_MS;
     private static final int SYNC_INTERVAL_MS = AppConstants.SYNC_INTERVAL_MS;
     private int readingsCount = 0;
     private double sumHr = 0, sumSpo2 = 0, sumTemp = 0, sumHum = 0;
@@ -57,12 +60,34 @@ public class HomeFragment extends Fragment {
     private int alarmPersistCounter = 0;
     private long activityEndTime = 0;
 
-    private Runnable simulationRunnable = new Runnable() {
+    private BroadcastReceiver bleReceiver = new BroadcastReceiver() {
         @Override
-        public void run() {
-            simulateData();
-            updateActivityStatus();
-            handler.postDelayed(this, SIMULATION_INTERVAL_MS);
+        public void onReceive(Context context, Intent intent) {
+            if ("com.example.cardioflow.BLE_DATA_RECEIVED".equals(intent.getAction())) {
+                int hr = intent.getIntExtra("heartRate", 0);
+                int spo2 = intent.getIntExtra("spo2", 0);
+                double temp = intent.getDoubleExtra("temp", 0.0);
+                double hum = intent.getDoubleExtra("hum", 0.0);
+                boolean leadsOff = intent.getBooleanExtra("leadsOff", false);
+
+                updateLastValues(hr, spo2, temp, hum);
+                if (isResumed()) {
+                    updateChart();
+                }
+                checkThresholds(hr, spo2, temp, hum);
+                
+                if (leadsOff) {
+                    tvAlarmStatus.setText("Senzor ECG Deconectat!");
+                    tvAlarmStatus.setTextColor(Color.RED);
+                }
+
+                // Aggregate for cloud sync
+                readingsCount++;
+                sumHr += hr;
+                sumSpo2 += spo2;
+                sumTemp += temp;
+                sumHum += hum;
+            }
         }
     };
 
@@ -92,6 +117,7 @@ public class HomeFragment extends Fragment {
         tvActivityCountdown = view.findViewById(R.id.tv_activity_countdown);
         tvAlarmStatus = view.findViewById(R.id.tv_alarm_status);
         btnStartActivity = view.findViewById(R.id.btn_start_activity);
+        btnConnectBle = view.findViewById(R.id.btn_connect_ble);
         chartHr = view.findViewById(R.id.chart_hr);
 
         dbManager = DatabaseManager.getInstance(requireContext());
@@ -101,6 +127,8 @@ public class HomeFragment extends Fragment {
         }
 
         btnStartActivity.setOnClickListener(v -> startActivitySuppression());
+        btnConnectBle.setOnClickListener(v -> 
+            startActivity(new Intent(requireContext(), DeviceScanActivity.class)));
 
         view.findViewById(R.id.view_heart).setOnClickListener(v -> 
             BodyPartDialog.show(requireContext(), BodyPartDialog.PartType.HEART, userThresholds));
@@ -111,7 +139,26 @@ public class HomeFragment extends Fragment {
 
         setupChart();
         updateChart();
-        startSimulation();
+        handler.post(syncRunnable);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        int flag = (Build.VERSION.SDK_INT >= 33) ? Context.RECEIVER_EXPORTED : 0;
+        requireContext().registerReceiver(bleReceiver, new IntentFilter("com.example.cardioflow.BLE_DATA_RECEIVED"), flag);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        requireContext().unregisterReceiver(bleReceiver);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        handler.removeCallbacks(syncRunnable);
     }
 
     private void setupChart() {
@@ -121,43 +168,18 @@ public class HomeFragment extends Fragment {
         chartHr.getAxisRight().setEnabled(false);
     }
 
-    private void startSimulation() {
-        handler.post(simulationRunnable);
-        handler.post(syncRunnable);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        handler.removeCallbacks(simulationRunnable);
-        handler.removeCallbacks(syncRunnable);
-    }
-
-    private void simulateData() {
-        int hr = 60 + random.nextInt(61); // 60-120
-        int spo2 = 90 + random.nextInt(11); // 90-100
-        double temp = 36.0 + (random.nextDouble() * 1.5); // 36.0-37.5
-        double hum = 30.0 + (random.nextDouble() * 40.0); // 30-70
-
-        dbManager.insertSensorData(hr, spo2, temp, hum);
-        updateLastValues(hr, spo2, temp, hum);
-        
-        // Nu actualizăm graficul la fiecare secundă dacă nu este necesar
-        // Putem folosi un contor sau să verificăm dacă fragmentul este vizibil
-        if (isResumed()) {
-            updateChart();
+    private void updateActivityStatus() {
+        long timeLeftMs = activityEndTime - System.currentTimeMillis();
+        if (timeLeftMs > 0) {
+            long seconds = (timeLeftMs / 1000) % 60;
+            long minutes = (timeLeftMs / (1000 * 60)) % 60;
+            tvActivityCountdown.setText(getString(R.string.activity_countdown_format, minutes, seconds));
+            btnStartActivity.setEnabled(false);
+        } else {
+            tvActivityCountdown.setText("");
+            btnStartActivity.setEnabled(true);
         }
-
-        checkThresholds(hr, spo2, temp, hum);
-
-        readingsCount++;
-        sumHr += hr;
-        sumSpo2 += spo2;
-        sumTemp += temp;
-        sumHum += hum;
     }
-
-    private void updateLastValues(int hr, int spo2, double temp, double hum) {
         tvLastHr.setText(getString(R.string.hr_format, hr));
         tvLastSpo2.setText(getString(R.string.spo2_format, spo2));
         tvLastTemp.setText(getString(R.string.temp_format, temp));
@@ -183,9 +205,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void checkThresholds(int hr, int spo2, double temp, double hum) {
-        if (userThresholds == null) return;
+        if (userThresholds == null || currentUser == null) return;
 
-        // Reload thresholds in case they were updated by the doctor
+        // Reload thresholds
         userThresholds = DataManager.getInstance(requireContext()).getThresholdsForPatient(currentUser.getId());
 
         String type = null;
@@ -198,9 +220,7 @@ public class HomeFragment extends Fragment {
         else if (temp < userThresholds.getTempMin()) { type = "Low Temperature"; value = temp; }
 
         if (type != null) {
-            // Check if we are in an activity interval
             if (System.currentTimeMillis() < activityEndTime) {
-                Log.d("Alarm", "Abnormal value ignored due to physical activity");
                 tvAlarmStatus.setText(R.string.status_activity_detected);
                 tvAlarmStatus.setTextColor(Color.BLUE);
                 alarmPersistCounter = 0;
@@ -208,20 +228,18 @@ public class HomeFragment extends Fragment {
             }
 
             alarmPersistCounter++;
-            Log.d("Alarm", "Abnormal value counter: " + alarmPersistCounter + "/" + userThresholds.getPersistSeconds());
             tvAlarmStatus.setText(getString(R.string.status_abnormal_detect, alarmPersistCounter, userThresholds.getPersistSeconds()));
-            tvAlarmStatus.setTextColor(Color.parseColor("#FFA500")); // Orange
+            tvAlarmStatus.setTextColor(Color.parseColor("#FFA500"));
 
             if (alarmPersistCounter >= userThresholds.getPersistSeconds()) {
                 triggerAlert(type, value);
-                alarmPersistCounter = 0; // Reset after trigger? Or keep at max? Requirement says reset on return to normal.
-                // Let's reset so it doesn't trigger every 10s if it persists.
+                alarmPersistCounter = 0;
             }
         } else {
             alarmPersistCounter = 0;
             if (System.currentTimeMillis() >= activityEndTime) {
                 tvAlarmStatus.setText(R.string.status_normal);
-                tvAlarmStatus.setTextColor(Color.parseColor("#006400")); // Dark Green
+                tvAlarmStatus.setTextColor(Color.parseColor("#006400"));
             }
         }
     }
@@ -232,19 +250,6 @@ public class HomeFragment extends Fragment {
         activityEndTime = System.currentTimeMillis() + (intervalMinutes * 60 * 1000);
         btnStartActivity.setEnabled(false);
         Toast.makeText(getContext(), getString(R.string.activity_started_msg, intervalMinutes), Toast.LENGTH_SHORT).show();
-    }
-
-    private void updateActivityStatus() {
-        long timeLeftMs = activityEndTime - System.currentTimeMillis();
-        if (timeLeftMs > 0) {
-            long seconds = (timeLeftMs / 1000) % 60;
-            long minutes = (timeLeftMs / (1000 * 60)) % 60;
-            tvActivityCountdown.setText(getString(R.string.activity_countdown_format, minutes, seconds));
-            btnStartActivity.setEnabled(false);
-        } else {
-            tvActivityCountdown.setText("");
-            btnStartActivity.setEnabled(true);
-        }
     }
 
     private void triggerAlert(String type, double value) {
@@ -272,7 +277,6 @@ public class HomeFragment extends Fragment {
 
         builder.setPositiveButton(R.string.btn_confirm, (dialog, which) -> {
             String userText = input.getText().toString();
-            // Update the last inserted alert (assuming it's the one we just triggered)
             List<Alert> alerts = dbManager.getAllAlerts();
             if (!alerts.isEmpty()) {
                 dbManager.updateAlertUserText(alerts.get(0).getAlertId(), userText);
@@ -289,16 +293,14 @@ public class HomeFragment extends Fragment {
             double avgTemp = sumTemp / readingsCount;
             double avgHum = sumHum / readingsCount;
 
-            Log.d("CloudSync", String.format("Simulare sincronizare: AVG HR: %.1f, SpO2: %.1f", avgHr, avgSpo2));
-            
             Measurement avgM = new Measurement();
+            avgM.setPatientId(currentUser != null ? currentUser.getId() : "1");
             avgM.setHeartRate((int)avgHr);
             avgM.setSpo2((int)avgSpo2);
             avgM.setTemperature(avgTemp);
             avgM.setHumidity(avgHum);
             com.example.cardioflow.services.CloudSync.sendAggregatedData(requireContext(), avgM);
 
-            // Reset counters
             readingsCount = 0;
             sumHr = 0; sumSpo2 = 0; sumTemp = 0; sumHum = 0;
         }

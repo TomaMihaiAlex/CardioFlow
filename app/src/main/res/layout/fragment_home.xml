@@ -304,6 +304,18 @@
                 android:padding="16dp">
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_connect_ble"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Conectează Senzor"
+                    android:textAllCaps="false"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="?attr/colorPrimary"
+                    android:textColor="?attr/colorPrimary"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_start_activity"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"

@@ -6,13 +6,14 @@
     android:orientation="vertical"
     android:padding="32dp"
     android:gravity="center"
-    android:background="#F8F9FA">
+    android:background="?android:attr/windowBackground"
+    android:fitsSystemWindows="true">
 
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:src="@android:drawable/ic_menu_myplaces"
-        app:tint="#B71C1C"
+        app:tint="?attr/colorPrimary"
         android:layout_marginBottom="16dp" />
 
     <TextView
@@ -21,7 +22,7 @@
         android:text="CardioFlow"
         android:textSize="36sp"
         android:textStyle="bold"
-        android:textColor="#B71C1C"
+        android:textColor="?attr/colorPrimary"
         android:shadowColor="#40000000"
         android:shadowDx="2"
         android:shadowDy="2"
@@ -33,7 +34,7 @@
         android:layout_height="wrap_content"
         android:text="Monitorizare cardiacă inteligentă"
         android:textSize="16sp"
-        android:textColor="#616161"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:layout_marginBottom="32dp" />
 
     <com.google.android.material.textfield.TextInputLayout
@@ -43,17 +44,18 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Email"
-        app:boxStrokeColor="#B71C1C"
-        app:hintTextColor="#B71C1C"
+        app:boxStrokeColor="?attr/colorPrimary"
+        app:hintTextColor="?attr/colorPrimary"
         app:startIconDrawable="@android:drawable/ic_dialog_email"
-        app:startIconTint="#B71C1C"
+        app:startIconTint="?attr/colorPrimary"
         app:errorEnabled="true">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            android:textColor="?attr/colorOnSurface" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -63,10 +65,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:hint="Parolă"
-        app:boxStrokeColor="#B71C1C"
-        app:hintTextColor="#B71C1C"
+        app:boxStrokeColor="?attr/colorPrimary"
+        app:hintTextColor="?attr/colorPrimary"
         app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
-        app:startIconTint="#B71C1C"
+        app:startIconTint="?attr/colorPrimary"
         app:endIconMode="password_toggle"
         app:errorEnabled="true">
 
@@ -74,7 +76,8 @@
             android:id="@+id/et_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"
+            android:textColor="?attr/colorOnSurface" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
@@ -85,7 +88,8 @@
         android:textSize="18sp"
         android:textAllCaps="false"
         app:cornerRadius="12dp"
-        android:backgroundTint="#B71C1C"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
         app:elevation="4dp"
         android:layout_marginTop="16dp" />
 
@@ -95,7 +99,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Înregistrare cont nou"
-        android:textColor="#B71C1C"
+        android:textColor="?attr/colorPrimary"
         android:layout_marginTop="8dp" />
 
     <com.google.android.material.button.MaterialButton
@@ -104,7 +108,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ai uitat parola?"
-        android:textColor="#616161"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="12sp" />
 
 </LinearLayout>
