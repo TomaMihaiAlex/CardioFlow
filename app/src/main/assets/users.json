@@ -16,5 +16,21 @@
     "firstName": "Maria",
     "lastName": "Vasilescu",
     "doctorId": ""
+  },
+  {
+    "id": "alice_id",
+    "email": "alice@example.com",
+    "password": "password123",
+    "role": "pacient",
+    "firstName": "Alice",
+    "lastName": "Test"
+  },
+  {
+    "id": "dr_smith_id",
+    "email": "drsmith@example.com",
+    "password": "docpass",
+    "role": "medic",
+    "firstName": "Dr",
+    "lastName": "Smith"
   }
 ]

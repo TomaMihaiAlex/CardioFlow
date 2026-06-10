@@ -79,7 +79,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void directLogin() {
-        String role = authManager.getCurrentUser().getRole();
+        User user = authManager.getCurrentUser();
+        if (user == null) {
+            authManager.logout();
+            return;
+        }
+        String role = user.getRole();
         Intent intent = "medic".equalsIgnoreCase(role) || AppConstants.ROLE_DOCTOR.equalsIgnoreCase(role) ? 
             new Intent(this, DoctorActivity.class) : 
             new Intent(this, MainActivity.class);

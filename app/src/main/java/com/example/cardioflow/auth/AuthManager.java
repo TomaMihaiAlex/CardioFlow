@@ -52,6 +52,7 @@ public class AuthManager {
             InputStreamReader reader = new InputStreamReader(is);
             Type type = new TypeToken<ArrayList<User>>(){}.getType();
             userList = new Gson().fromJson(reader, type);
+            if (userList == null) userList = new ArrayList<>();
         } catch (Exception e) {
             userList = new ArrayList<>();
         }
@@ -109,7 +110,7 @@ public class AuthManager {
                 .putString("logged_user_id", user.getId())
                 .putString("logged_user_email", user.getEmail())
                 .putString("logged_user_role", user.getRole())
-                .apply();
+                .commit();
     }
 
     public boolean login(String email, String password) {
@@ -119,7 +120,7 @@ public class AuthManager {
                     .putString("logged_user_id", user.getId())
                     .putString("logged_user_email", user.getEmail())
                     .putString("logged_user_role", user.getRole())
-                    .apply();
+                    .commit();
                 return true;
             }
         }
@@ -151,8 +152,10 @@ public class AuthManager {
         String userId = prefs.getString("logged_user_id", null);
         if (userId == null) return null;
         
+        if (userList == null) return null;
+        
         for (User u : userList) {
-            if (u.getId().equals(userId)) {
+            if (u != null && userId.equals(u.getId())) {
                 return u;
             }
         }

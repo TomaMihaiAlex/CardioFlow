@@ -95,20 +95,34 @@ public class RecommendationsFragmentDoctor extends Fragment {
         RecommendationsAdapter(List<Recommendation> list) { this.list = list; }
         @NonNull @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_2, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recommendation_doctor, parent, false);
             return new ViewHolder(v);
         }
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Recommendation r = list.get(position);
-            holder.text1.setText(String.format("%s - %s", r.getType(), getString(R.string.rec_duration_format, r.getDailyDurationMin())));
-            holder.text2.setText(r.getInstructions().isEmpty() ? getString(R.string.rec_empty_instructions) : r.getInstructions());
+            holder.tvType.setText(r.getType());
+            holder.tvDuration.setText(getString(R.string.rec_duration_format, r.getDailyDurationMin()));
+            holder.tvInstructions.setText(r.getInstructions().isEmpty() ? getString(R.string.rec_empty_instructions) : r.getInstructions());
+            
+            holder.btnDelete.setOnClickListener(v -> {
+                DatabaseManager.getInstance(requireContext()).deleteRecommendation(r.getRecommendationId());
+                FirebaseManager.getInstance().deleteRecommendation(r.getRecommendationId());
+                loadRecommendations();
+            });
         }
         @Override
         public int getItemCount() { return list.size(); }
         class ViewHolder extends RecyclerView.ViewHolder {
-            TextView text1, text2;
-            ViewHolder(View v) { super(v); text1 = v.findViewById(android.R.id.text1); text2 = v.findViewById(android.R.id.text2); }
+            TextView tvType, tvInstructions, tvDuration;
+            View btnDelete;
+            ViewHolder(View v) { 
+                super(v); 
+                tvType = v.findViewById(R.id.tv_rec_type); 
+                tvInstructions = v.findViewById(R.id.tv_rec_instructions);
+                tvDuration = v.findViewById(R.id.tv_rec_duration);
+                btnDelete = v.findViewById(R.id.btn_delete_rec);
+            }
         }
     }
 }

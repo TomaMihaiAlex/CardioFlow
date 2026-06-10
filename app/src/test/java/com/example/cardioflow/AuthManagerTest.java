@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
+import androidx.test.core.app.ApplicationProvider;
 import org.robolectric.annotation.Config;
 
 import java.util.List;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
  * without needing an emulator, while keeping tests in the JVM.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 33)
+@Config(sdk = 33, packageName = "com.example.cardioflow")
 public class AuthManagerTest {
 
     private AuthManager authManager;
@@ -52,7 +52,7 @@ public class AuthManagerTest {
     @Before
     public void setUp() {
         // Robolectric supplies a real ApplicationContext backed by an in-memory filesystem.
-        context = RuntimeEnvironment.getApplication();
+        context = ApplicationProvider.getApplicationContext();
         // Reset singleton between tests so state does not bleed across cases.
         AuthManager.resetInstance(); // you must add a package-private static resetInstance() — see note below
         authManager = AuthManager.getInstance(context);

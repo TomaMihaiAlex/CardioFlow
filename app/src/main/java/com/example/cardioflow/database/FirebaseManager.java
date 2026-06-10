@@ -97,6 +97,13 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> Log.e(TAG, "Error saving recommendation", e));
     }
 
+    public void deleteRecommendation(String id) {
+        if (db == null) return;
+        getRecommendationsCollection().document(id).delete()
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Recommendation deleted from Firestore"))
+                .addOnFailureListener(e -> Log.e(TAG, "Error deleting recommendation", e));
+    }
+
     public void listenForRecommendations(String patientId, RecommendationsCallback callback) {
         if (db == null) return;
         getRecommendationsCollection().whereEqualTo("patientId", patientId)

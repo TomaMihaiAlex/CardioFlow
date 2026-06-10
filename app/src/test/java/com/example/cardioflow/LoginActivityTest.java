@@ -17,8 +17,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
+import androidx.test.core.app.ApplicationProvider;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
@@ -42,12 +43,14 @@ public class LoginActivityTest {
     @Before
     public void setUp() {
         // Clear any lingering auth state between tests.
-        AuthManager.getInstance(RuntimeEnvironment.getApplication()).logout();
+        AuthManager.resetInstance();
+        AuthManager.getInstance(ApplicationProvider.getApplicationContext()).logout();
     }
 
     @After
     public void tearDown() {
-        AuthManager.getInstance(RuntimeEnvironment.getApplication()).logout();
+        AuthManager.getInstance(ApplicationProvider.getApplicationContext()).logout();
+        AuthManager.resetInstance();
     }
 
     // ============================================================
@@ -148,73 +151,63 @@ public class LoginActivityTest {
     @Test
     public void onCreate_whenAlreadyLoggedInAsPatient_redirectsToMainActivity() {
         // Manually log in a patient before launching the activity.
-        AuthManager auth = AuthManager.getInstance(RuntimeEnvironment.getApplication());
+        AuthManager auth = AuthManager.getInstance(ApplicationProvider.getApplicationContext());
         auth.login("alice@example.com", "password123"); // patient in test users.json
 
-        try (ActivityScenario<LoginActivity> scenario = ActivityScenario.launch(LoginActivity.class)) {
-            scenario.onActivity(activity -> {
-                ShadowActivity shadow = Shadows.shadowOf(activity);
-                Intent started = shadow.getNextStartedActivity();
-                assertNotNull("Should redirect when already logged in", started);
-                assertEquals("Patient should go to MainActivity",
-                        MainActivity.class.getName(), started.getComponent().getClassName());
-                assertTrue("LoginActivity must finish after redirect", activity.isFinishing());
-            });
-        }
+        // Use Robolectric directly for activities that finish in onCreate
+        LoginActivity activity = Robolectric.buildActivity(LoginActivity.class).setup().get();
+        ShadowActivity shadow = Shadows.shadowOf(activity);
+        Intent started = shadow.getNextStartedActivity();
+        
+        assertNotNull("Should redirect when already logged in", started);
+        assertEquals("Patient should go to MainActivity",
+                MainActivity.class.getName(), started.getComponent().getClassName());
+        assertTrue("LoginActivity must finish after redirect", activity.isFinishing());
     }
 
     @Test
     public void onCreate_whenAlreadyLoggedInAsDoctor_redirectsToDoctorActivity() {
-        AuthManager auth = AuthManager.getInstance(RuntimeEnvironment.getApplication());
+        AuthManager auth = AuthManager.getInstance(ApplicationProvider.getApplicationContext());
         auth.login("drsmith@example.com", "docpass"); // doctor in test users.json
 
-        try (ActivityScenario<LoginActivity> scenario = ActivityScenario.launch(LoginActivity.class)) {
-            scenario.onActivity(activity -> {
-                ShadowActivity shadow = Shadows.shadowOf(activity);
-                Intent started = shadow.getNextStartedActivity();
-                assertNotNull(started);
-                assertEquals("Doctor should go to DoctorActivity",
-                        DoctorActivity.class.getName(), started.getComponent().getClassName());
-            });
-        }
+        LoginActivity activity = Robolectric.buildActivity(LoginActivity.class).setup().get();
+        ShadowActivity shadow = Shadows.shadowOf(activity);
+        Intent started = shadow.getNextStartedActivity();
+        
+        assertNotNull("Should redirect when doctor is logged in", started);
+        assertEquals("Doctor should go to DoctorActivity",
+                DoctorActivity.class.getName(), started.getComponent().getClassName());
     }
 
     // ============================================================
-    // directLogin() role routing — via reflection / package-visible helper
+    // directLogin() role routing
     // ============================================================
 
     @Test
     public void directLogin_withMedicRole_launchesDoctorActivity() {
-        // Test the role-routing logic directly: create a user with role "medic",
-        // save to prefs, then verify the launched intent.
-        AuthManager auth = AuthManager.getInstance(RuntimeEnvironment.getApplication());
-        // Use a doctor account from the test asset.
+        AuthManager auth = AuthManager.getInstance(ApplicationProvider.getApplicationContext());
         auth.login("drsmith@example.com", "docpass");
 
-        try (ActivityScenario<LoginActivity> scenario = ActivityScenario.launch(LoginActivity.class)) {
-            scenario.onActivity(activity -> {
-                ShadowActivity shadow = Shadows.shadowOf(activity);
-                Intent started = shadow.getNextStartedActivity();
-                assertNotNull(started);
-                String cls = started.getComponent().getClassName();
-                assertEquals(DoctorActivity.class.getName(), cls);
-            });
-        }
+        LoginActivity activity = Robolectric.buildActivity(LoginActivity.class).setup().get();
+        ShadowActivity shadow = Shadows.shadowOf(activity);
+        Intent started = shadow.getNextStartedActivity();
+        
+        assertNotNull("Intent should not be null", started);
+        String cls = started.getComponent().getClassName();
+        assertEquals(DoctorActivity.class.getName(), cls);
     }
 
     @Test
     public void directLogin_withPacientRole_launchesMainActivity() {
-        AuthManager auth = AuthManager.getInstance(RuntimeEnvironment.getApplication());
+        AuthManager auth = AuthManager.getInstance(ApplicationProvider.getApplicationContext());
         auth.login("alice@example.com", "password123");
 
-        try (ActivityScenario<LoginActivity> scenario = ActivityScenario.launch(LoginActivity.class)) {
-            scenario.onActivity(activity -> {
-                ShadowActivity shadow = Shadows.shadowOf(activity);
-                Intent started = shadow.getNextStartedActivity();
-                assertNotNull(started);
-                assertEquals(MainActivity.class.getName(),
-                        started.getComponent().getClassName());
-            });
-        }
+        LoginActivity activity = Robolectric.buildActivity(LoginActivity.class).setup().get();
+        ShadowActivity shadow = Shadows.shadowOf(activity);
+        Intent started = shadow.getNextStartedActivity();
+        
+        assertNotNull("Intent should not be null", started);
+        assertEquals(MainActivity.class.getName(),
+                started.getComponent().getClassName());
     }
 }
