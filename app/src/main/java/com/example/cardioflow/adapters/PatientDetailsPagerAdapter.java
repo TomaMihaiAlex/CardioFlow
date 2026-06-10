@@ -10,6 +10,7 @@ import com.example.cardioflow.fragments.AlertsFragment;
 import com.example.cardioflow.fragments.RecommendationsFragmentDoctor;
 import com.example.cardioflow.fragments.ThresholdsConfigFragment;
 import com.example.cardioflow.fragments.PatientBodyFragment;
+import com.example.cardioflow.fragments.PatientLiveFragment;
 import com.example.cardioflow.R;
 
 public class PatientDetailsPagerAdapter extends FragmentStateAdapter {
@@ -26,32 +27,35 @@ public class PatientDetailsPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         switch (position) {
             case 0:
-                return HistoryFragment.newInstance(patientId);
+                return PatientLiveFragment.newInstance(patientId);
             case 1:
-                return PatientBodyFragment.newInstance(patientId);
+                return HistoryFragment.newInstance(patientId);
             case 2:
-                return AlertsFragment.newInstance(patientId);
+                return PatientBodyFragment.newInstance(patientId);
             case 3:
-                return RecommendationsFragmentDoctor.newInstance(patientId);
+                return AlertsFragment.newInstance(patientId);
             case 4:
+                return RecommendationsFragmentDoctor.newInstance(patientId);
+            case 5:
                 return ThresholdsConfigFragment.newInstance(patientId);
             default:
-                return HistoryFragment.newInstance(patientId);
+                return PatientLiveFragment.newInstance(patientId);
         }
     }
 
     @Override
     public int getItemCount() {
-        return 5;
+        return 6;
     }
 
     public static String getTabTitle(int position, android.content.Context context) {
         switch (position) {
-            case 0: return context.getString(R.string.tab_history);
-            case 1: return context.getString(R.string.tab_body);
-            case 2: return context.getString(R.string.tab_alerts);
-            case 3: return context.getString(R.string.tab_recommendations);
-            case 4: return context.getString(R.string.tab_config);
+            case 0: return "Live";
+            case 1: return context.getString(R.string.tab_history);
+            case 2: return context.getString(R.string.tab_body);
+            case 3: return context.getString(R.string.tab_alerts);
+            case 4: return context.getString(R.string.tab_recommendations);
+            case 5: return context.getString(R.string.tab_config);
             default: return "";
         }
     }

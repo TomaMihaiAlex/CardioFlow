@@ -9,6 +9,7 @@ public class Measurement {
     private int spo2;
     private double temperature;
     private double humidity;
+    private java.util.List<Integer> ecgSamples;
 
     public Measurement() {}
 
@@ -19,6 +20,11 @@ public class Measurement {
         this.spo2 = spo2;
         this.temperature = temperature;
         this.humidity = humidity;
+    }
+
+    public Measurement(String patientId, String timestamp, int heartRate, int spo2, double temperature, double humidity, java.util.List<Integer> ecgSamples) {
+        this(patientId, timestamp, heartRate, spo2, temperature, humidity);
+        this.ecgSamples = ecgSamples;
     }
 
     // Getteri și setteri
@@ -34,4 +40,6 @@ public class Measurement {
     public void setTemperature(double temperature) { this.temperature = temperature; }
     public double getHumidity() { return humidity; }
     public void setHumidity(double humidity) { this.humidity = humidity; }
+    public java.util.List<Integer> getEcgSamples() { return ecgSamples; }
+    public void setEcgSamples(java.util.List<Integer> ecgSamples) { this.ecgSamples = ecgSamples; }
 }

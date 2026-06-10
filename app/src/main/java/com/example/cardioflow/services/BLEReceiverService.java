@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
@@ -49,6 +50,7 @@ public class BLEReceiverService extends Service {
     private final Handler reconnectHandler = new Handler(Looper.getMainLooper());
     private boolean isConnecting = false;
     private boolean isUserDisconnected = false;
+    private String lastStatus = "Deconectat";
 
     private static final UUID SERVICE_UUID = UUID.fromString(AppConstants.UART_SERVICE_UUID);
     private static final UUID TX_CHAR_UUID = UUID.fromString(AppConstants.TX_CHAR_UUID);
@@ -86,7 +88,10 @@ public class BLEReceiverService extends Service {
             connectToDevice(deviceAddress);
         } else {
             updateNotification("Niciun dispozitiv selectat.");
+            broadcastStatus("Niciun dispozitiv selectat");
         }
+        
+        broadcastStatus(lastStatus);
 
         return START_STICKY;
     }
@@ -96,6 +101,7 @@ public class BLEReceiverService extends Service {
         if (bluetoothAdapter == null || address == null || isConnecting) return;
 
         isConnecting = true;
+        broadcastStatus("Se conectează la " + address + "...");
         updateNotification("Conectare la " + address + "...");
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
         bluetoothGatt = device.connectGatt(this, false, gattCallback);
@@ -109,11 +115,18 @@ public class BLEReceiverService extends Service {
                 isConnecting = false;
                 Log.i(TAG, "Connected to GATT server.");
                 updateNotification("Dispozitiv Conectat");
-                gatt.discoverServices();
+                broadcastStatus("Conectat");
+                
+                // Request larger MTU for long JSON strings
+                gatt.requestMtu(512);
+                
+                // Wait a bit before discovering services to let MTU settle
+                new Handler(Looper.getMainLooper()).postDelayed(gatt::discoverServices, 1000);
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 isConnecting = false;
                 Log.i(TAG, "Disconnected from GATT server.");
                 updateNotification("Deconectat. Reîncercare...");
+                broadcastStatus("Deconectat. Reîncercare...");
                 jsonBuffer.setLength(0);
                 
                 if (!isUserDisconnected) {
@@ -126,66 +139,176 @@ public class BLEReceiverService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                try {
-                    BluetoothGattCharacteristic txChar = gatt.getService(SERVICE_UUID)
-                            .getCharacteristic(TX_CHAR_UUID);
-                    
-                    gatt.setCharacteristicNotification(txChar, true);
-                    
-                    BluetoothGattDescriptor descriptor = txChar.getDescriptor(CCCD_UUID);
-                    if (descriptor != null) {
-                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                        gatt.writeDescriptor(descriptor);
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Error setting up notifications: " + e.getMessage());
+                BluetoothGattService service = gatt.getService(SERVICE_UUID);
+                BluetoothGattCharacteristic txChar = null;
+
+                if (service != null) {
+                    txChar = service.getCharacteristic(TX_CHAR_UUID);
                 }
+
+                if (service == null || txChar == null) {
+                    service = gatt.getService(UUID.fromString(AppConstants.NORDIC_UART_SERVICE));
+                    if (service != null) {
+                        txChar = service.getCharacteristic(UUID.fromString(AppConstants.NORDIC_TX_CHAR));
+                    }
+                }
+
+                boolean atLeastOneEnabled = false;
+                if (service == null || txChar == null) {
+                    service = gatt.getService(UUID.fromString(AppConstants.CUSTOM_SERVICE_UUID));
+                    if (service != null) {
+                        txChar = service.getCharacteristic(UUID.fromString(AppConstants.CUSTOM_TX_CHAR_UUID));
+                        
+                        for (BluetoothGattCharacteristic c : service.getCharacteristics()) {
+                            if ((c.getProperties() & BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) {
+                                boolean success = gatt.setCharacteristicNotification(c, true);
+                                if (success) {
+                                    BluetoothGattDescriptor d = c.getDescriptor(CCCD_UUID);
+                                    if (d == null && !c.getDescriptors().isEmpty()) d = c.getDescriptors().get(0);
+                                    
+                                    if (d != null) {
+                                        d.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                        gatt.writeDescriptor(d);
+                                    }
+                                    atLeastOneEnabled = true;
+                                }
+                                if (txChar == null) txChar = c;
+                            }
+                        }
+                    }
+                }
+
+                if (service != null && txChar != null) {
+                    if (!atLeastOneEnabled) {
+                        gatt.setCharacteristicNotification(txChar, true);
+                        BluetoothGattDescriptor descriptor = txChar.getDescriptor(CCCD_UUID);
+                        if (descriptor == null && !txChar.getDescriptors().isEmpty()) {
+                            descriptor = txChar.getDescriptors().get(0);
+                        }
+
+                        if (descriptor != null) {
+                            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                            if (gatt.writeDescriptor(descriptor)) {
+                                broadcastStatus("Conectat. Aștept date...");
+                            } else {
+                                broadcastStatus("Eroare activare date");
+                            }
+                        } else {
+                            broadcastStatus("Conectat (Fără CCCD). Aștept date...");
+                        }
+                    } else {
+                        broadcastStatus("Conectat. Aștept date...");
+                    }
+                } else {
+                    broadcastStatus("Eroare: Serviciu UART necompatibil");
+                    StringBuilder debugMsg = new StringBuilder("UUID-uri complete găsite:\n");
+                    for (BluetoothGattService s : gatt.getServices()) {
+                        debugMsg.append("S: ").append(s.getUuid().toString()).append("\n");
+                        for (BluetoothGattCharacteristic c : s.getCharacteristics()) {
+                            debugMsg.append("  C: ").append(c.getUuid().toString()).append("\n");
+                        }
+                    }
+                    broadcastDebugInfo(debugMsg.toString());
+                }
+            } else {
+                broadcastStatus("Eroare descoperire servicii: " + status);
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            String part = new String(characteristic.getValue());
+            byte[] value = characteristic.getValue();
+            if (value == null) return;
+            String part = new String(value);
+            
             jsonBuffer.append(part);
             
             String fullString = jsonBuffer.toString();
-            int startIdx;
-            while ((startIdx = fullString.indexOf("{")) != -1) {
-                int endIdx = fullString.indexOf("}", startIdx);
-                if (endIdx != -1) {
-                    String completeJson = fullString.substring(startIdx, endIdx + 1);
-                    parseAndProcess(completeJson);
-                    fullString = fullString.substring(endIdx + 1);
-                    jsonBuffer.setLength(0);
-                    jsonBuffer.append(fullString);
-                } else {
-                    break;
-                }
+            
+            // AGGRESSIVE BUFFER FIX:
+            // If we have multiple '{' without a '}', it means the previous one was incomplete
+            // and the hardware restarted the transmission. We keep only the last one.
+            int lastStart = fullString.lastIndexOf("{");
+            int firstEnd = fullString.indexOf("}");
+            
+            if (lastStart > 0 && (firstEnd == -1 || firstEnd < lastStart)) {
+                // Discard everything before the latest '{'
+                String fixedString = fullString.substring(lastStart);
+                jsonBuffer.setLength(0);
+                jsonBuffer.append(fixedString);
+                fullString = fixedString;
+            }
+
+            broadcastDebugInfo("BUFFER: " + fullString);
+            
+            int startIdx = fullString.indexOf("{");
+            int endIdx = fullString.indexOf("}");
+            
+            if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+                String completeJson = fullString.substring(startIdx, endIdx + 1);
+                parseAndProcess(completeJson);
+                
+                // Clear the buffer after a successful (or attempted) full packet
+                jsonBuffer.setLength(0);
+                String remaining = fullString.substring(endIdx + 1);
+                jsonBuffer.append(remaining);
+            }
+            
+            if (jsonBuffer.length() > 0) {
+                broadcastStatus("Recepție... (" + jsonBuffer.length() + " bytes)");
             }
         }
     };
 
+    private void broadcastStatus(String status) {
+        lastStatus = status;
+        Intent intent = new Intent("com.example.cardioflow.BLE_STATUS_CHANGED");
+        intent.putExtra("status", status);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastDebugInfo(String debugInfo) {
+        Intent intent = new Intent("com.example.cardioflow.BLE_STATUS_CHANGED");
+        intent.putExtra("status", lastStatus);
+        intent.putExtra("debug_uuids", debugInfo);
+        sendBroadcast(intent);
+    }
+
     private void parseAndProcess(String json) {
+        Log.d(TAG, "Parsing JSON: " + json);
         try {
             SensorReading reading = gson.fromJson(json, SensorReading.class);
-            if (reading != null && reading.sensors != null) {
-                dbManager.insertSensorData(
-                        reading.sensors.heartRate,
-                        reading.sensors.spo2,
-                        reading.sensors.temperature,
-                        reading.sensors.humidity
-                );
+            if (reading != null) {
+                // Using the flat fields from the updated model
+                int hr = reading.heartRate;
+                int spo2 = reading.spo2;
+                double temp = reading.temperature;
+                double hum = reading.humidity;
+
+                broadcastStatus("Date primite: HR=" + hr + " SpO2=" + spo2);
+                dbManager.insertSensorData(hr, spo2, temp, hum);
 
                 Intent intent = new Intent("com.example.cardioflow.BLE_DATA_RECEIVED");
-                intent.putExtra("heartRate", reading.sensors.heartRate);
-                intent.putExtra("spo2", reading.sensors.spo2);
-                intent.putExtra("temp", reading.sensors.temperature);
-                intent.putExtra("hum", reading.sensors.humidity);
-                intent.putExtra("leadsOff", reading.hardwareStatus != null && reading.hardwareStatus.ecgLeadsOff);
+                intent.putExtra("heartRate", hr);
+                intent.putExtra("spo2", spo2);
+                intent.putExtra("temp", temp);
+                intent.putExtra("hum", hum);
+                
+                if (reading.ecgSamples != null) {
+                    int[] samples = new int[reading.ecgSamples.size()];
+                    for (int i = 0; i < reading.ecgSamples.size(); i++) samples[i] = reading.ecgSamples.get(i);
+                    intent.putExtra("ecgSamples", samples);
+                }
+
+                // The hardware seems to use 'valid' flag instead of explicit leadsOff
+                intent.putExtra("leadsOff", !reading.valid && hr == -1);
                 sendBroadcast(intent);
+            } else {
+                broadcastStatus("Eroare: Obiect JSON nul");
             }
         } catch (Exception e) {
             Log.e(TAG, "JSON error: " + e.getMessage());
+            broadcastStatus("Eroare format date (JSON)");
         }
     }
 
@@ -224,6 +347,7 @@ public class BLEReceiverService extends Service {
     @Override
     public void onDestroy() {
         isUserDisconnected = true;
+        broadcastStatus("Deconectat de utilizator");
         reconnectHandler.removeCallbacksAndMessages(null);
         if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();

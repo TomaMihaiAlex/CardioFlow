@@ -15,10 +15,37 @@ import com.example.cardioflow.database.FirebaseManager;
 import com.example.cardioflow.models.Alert;
 import com.example.cardioflow.models.Measurement;
 import com.example.cardioflow.sync.CloudSyncWorker;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.gson.Gson;
 
 public class CloudSync {
     private static final String TAG = "CloudSync";
+
+    public static void sendRealTimeData(Context context, Measurement m) {
+        FirebaseManager fm = FirebaseManager.getInstance();
+        
+        // According to provided rules, readings go to RTDB: device_data/$deviceId/readings
+        // Using patientId as deviceId for now
+        String devId = m.getPatientId();
+        DatabaseReference rtdbRef = fm.getReadingsReference(devId);
+        
+        if (rtdbRef != null) {
+            Log.d(TAG, "### CLOUD ### Sending RTDB reading for device: " + devId);
+            rtdbRef.push().setValue(m)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "### CLOUD ### RTDB sync success!"))
+                .addOnFailureListener(e -> Log.e(TAG, "### CLOUD ### RTDB sync fail: " + e.getMessage()));
+        }
+
+        // Keep Firestore sync as backup if collection exists
+        CollectionReference coll = fm.getSensorDataCollection();
+        if (coll != null) {
+            Log.d(TAG, "### CLOUD ### Attempting Firestore backup for patient: " + m.getPatientId());
+            coll.add(m)
+                .addOnSuccessListener(documentReference -> Log.d(TAG, "### CLOUD ### Firestore sync success! ID: " + documentReference.getId()))
+                .addOnFailureListener(e -> Log.e(TAG, "### CLOUD ### Firestore sync failed", e));
+        }
+    }
 
     public static void sendAggregatedData(Context context, Measurement m) {
         FirebaseManager fm = FirebaseManager.getInstance();

@@ -17,6 +17,7 @@ import com.example.cardioflow.fragments.HistoryFragment;
 import com.example.cardioflow.fragments.HomeFragment;
 import com.example.cardioflow.fragments.RecommendationsFragment;
 import com.example.cardioflow.models.User;
+import com.example.cardioflow.database.FirebaseManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeHelper.applyTheme(this);
+        FirebaseManager.initializeManual(this);
+
         if (!AuthManager.getInstance(this).isLoggedIn()) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();

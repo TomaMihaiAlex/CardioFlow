@@ -2,6 +2,8 @@ package com.example.cardioflow.auth;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.example.cardioflow.database.FirebaseManager;
@@ -60,16 +62,16 @@ public class AuthManager {
 
     public void loginFirebase(String email, String password, AuthCallback callback) {
         if (firebaseAuth == null) {
-            // If Firebase is not initialized, try local login as a fallback
+            Log.e("AuthManager", "### CLOUD ### Firebase Auth is NULL - falling back to local");
             if (login(email, password)) {
                 User user = getCurrentUser();
                 if (user != null) {
                     callback.onSuccess(user);
                 } else {
-                    callback.onError("Firebase not initialized and local user data not found");
+                    callback.onError("Eroare date locale");
                 }
             } else {
-                callback.onError("Firebase not initialized and local login failed");
+                callback.onError("Eroare autentificare");
             }
             return;
         }
@@ -79,10 +81,11 @@ public class AuthManager {
                     if (task.isSuccessful()) {
                         FirebaseUser fbUser = firebaseAuth.getCurrentUser();
                         if (fbUser != null) {
+                            Log.d("AuthManager", "### CLOUD ### Firebase Auth Success for: " + email);
                             // Fetch user details from Firestore
                             FirebaseManager firebaseManager = FirebaseManager.getInstance();
                             if (firebaseManager.getUsersCollection() == null) {
-                                callback.onError("Firebase Firestore not initialized");
+                                callback.onError("Firestore indisponibil");
                                 return;
                             }
                             firebaseManager.getUsersCollection()
@@ -94,13 +97,39 @@ public class AuthManager {
                                             saveUserToPrefs(user);
                                             callback.onSuccess(user);
                                         } else {
-                                            callback.onError("User data not found");
+                                            // Create a default user object if doc missing but Auth exists
+                                            User newUser = new User(fbUser.getUid(), email, "", "pacient", "", "", "");
+                                            saveUserToPrefs(newUser);
+                                            callback.onSuccess(newUser);
                                         }
                                     })
                                     .addOnFailureListener(e -> callback.onError(e.getMessage()));
                         }
                     } else {
+                        Log.e("AuthManager", "### CLOUD ### Firebase Auth Failed: " + task.getException().getMessage());
                         callback.onError(task.getException() != null ? task.getException().getMessage() : "Login failed");
+                    }
+                });
+    }
+
+    public void registerFirebase(User user, AuthCallback callback) {
+        if (firebaseAuth == null) {
+            callback.onError("Sistemul Cloud nu este inițializat");
+            return;
+        }
+
+        firebaseAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword())
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser fbUser = firebaseAuth.getCurrentUser();
+                        if (fbUser != null) {
+                            user.setId(fbUser.getUid());
+                            FirebaseManager.getInstance().saveUser(user);
+                            saveUserToPrefs(user);
+                            callback.onSuccess(user);
+                        }
+                    } else {
+                        callback.onError(task.getException() != null ? task.getException().getMessage() : "Registration failed");
                     }
                 });
     }

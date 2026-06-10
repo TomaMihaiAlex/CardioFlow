@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,9 +50,10 @@ import java.util.Random;
 
 public class HomeFragment extends Fragment {
 
-    private TextView tvLastHr, tvLastSpo2, tvLastTemp, tvLastHum, tvActivityCountdown, tvAlarmStatus;
+    private TextView tvLastHr, tvLastSpo2, tvLastTemp, tvLastHum, tvActivityCountdown, tvAlarmStatus, tvBleStatus, tvDebugUuids;
+    private ImageView ivBleStatusDot;
     private Button btnStartActivity, btnConnectBle;
-    private LineChart chartHr;
+    private LineChart chartHr, chartEcg;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private DatabaseManager dbManager;
     private Thresholds userThresholds;
@@ -68,17 +70,61 @@ public class HomeFragment extends Fragment {
     private final BroadcastReceiver bleReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if ("com.example.cardioflow.BLE_DATA_RECEIVED".equals(intent.getAction())) {
+            String action = intent.getAction();
+            if ("com.example.cardioflow.BLE_DATA_RECEIVED".equals(action)) {
+                if (isSimulationMode) {
+                    isSimulationMode = false;
+                    handler.removeCallbacks(simulationRunnable);
+                }
+                
+                List<Integer> ecgSamples = null;
+                if (intent.hasExtra("ecgSamples")) {
+                    int[] samplesArray = intent.getIntArrayExtra("ecgSamples");
+                    if (samplesArray != null) {
+                        ecgSamples = new ArrayList<>();
+                        for (int s : samplesArray) ecgSamples.add(s);
+                    }
+                }
+
                 processNewData(
                         intent.getIntExtra("heartRate", 0),
                         intent.getIntExtra("spo2", 0),
                         intent.getDoubleExtra("temp", 0.0),
                         intent.getDoubleExtra("hum", 0.0),
-                        intent.getBooleanExtra("leadsOff", false)
+                        intent.getBooleanExtra("leadsOff", false),
+                        ecgSamples
                 );
+            } else if ("com.example.cardioflow.BLE_STATUS_CHANGED".equals(action)) {
+                String status = intent.getStringExtra("status");
+                String debugInfo = intent.getStringExtra("debug_uuids");
+                if (status != null) {
+                    updateBleStatusUI(status);
+                }
+                if (debugInfo != null && tvDebugUuids != null) {
+                    tvDebugUuids.setText(debugInfo);
+                }
             }
         }
     };
+
+    private void updateBleStatusUI(String status) {
+        if (tvBleStatus == null || ivBleStatusDot == null) return;
+        
+        tvBleStatus.setText(status);
+        if (status.contains("Conectat")) {
+            ivBleStatusDot.setColorFilter(Color.parseColor("#4CAF50")); // Green
+            tvBleStatus.setTextColor(Color.parseColor("#4CAF50"));
+        } else if (status.contains("Se conectează") || status.contains("Configurare")) {
+            ivBleStatusDot.setColorFilter(Color.parseColor("#FFA500")); // Orange
+            tvBleStatus.setTextColor(Color.parseColor("#FFA500"));
+        } else {
+            ivBleStatusDot.setColorFilter(Color.GRAY);
+            tvBleStatus.setTextColor(Color.GRAY);
+        }
+        
+        // Also update the bottom alarm status text if it's a general status
+        tvAlarmStatus.setText(status);
+    }
 
     private final Runnable syncRunnable = new Runnable() {
         @Override
@@ -100,7 +146,7 @@ public class HomeFragment extends Fragment {
                 double hum = 40.0 + r.nextDouble() * 20.0;
                 
                 dbManager.insertSensorData(hr, spo2, temp, hum);
-                processNewData(hr, spo2, temp, hum, false);
+                processNewData(hr, spo2, temp, hum, false, null);
                 
                 handler.postDelayed(this, 10000);
             }
@@ -124,9 +170,23 @@ public class HomeFragment extends Fragment {
         tvLastHum = view.findViewById(R.id.tv_last_hum);
         tvActivityCountdown = view.findViewById(R.id.tv_activity_countdown);
         tvAlarmStatus = view.findViewById(R.id.tv_alarm_status);
+        tvDebugUuids = view.findViewById(R.id.tv_debug_uuids);
+        tvBleStatus = view.findViewById(R.id.tv_ble_connection_state);
+        ivBleStatusDot = view.findViewById(R.id.iv_ble_status_dot);
         btnStartActivity = view.findViewById(R.id.btn_start_activity);
+
+        // Toggle debug view on long press of the status layout
+        view.findViewById(R.id.layout_ble_status).setOnLongClickListener(v -> {
+            if (tvDebugUuids != null) {
+                int vis = tvDebugUuids.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;
+                tvDebugUuids.setVisibility(vis);
+                Toast.makeText(getContext(), "Debug View: " + (vis == View.VISIBLE ? "ON" : "OFF"), Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        });
         btnConnectBle = view.findViewById(R.id.btn_connect_ble);
         chartHr = view.findViewById(R.id.chart_hr);
+        chartEcg = view.findViewById(R.id.chart_ecg);
 
         dbManager = DatabaseManager.getInstance(requireContext());
         currentUser = AuthManager.getInstance(requireContext()).getCurrentUser();
@@ -161,8 +221,24 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        SharedPreferences prefs = requireContext().getSharedPreferences(AppConstants.PREFS_NAME, Context.MODE_PRIVATE);
+        isSimulationMode = prefs.getBoolean(AppConstants.KEY_SIMULATION_MODE, true);
+        
+        if (isSimulationMode) {
+            if (!handler.hasCallbacks(simulationRunnable)) {
+                handler.post(simulationRunnable);
+            }
+            updateBleStatusUI("Mod Simulare Activ");
+        } else {
+            handler.removeCallbacks(simulationRunnable);
+            updateBleStatusUI("Așteptare conexiune BLE...");
+        }
+
         int flag = (Build.VERSION.SDK_INT >= 33) ? Context.RECEIVER_EXPORTED : 0;
-        requireContext().registerReceiver(bleReceiver, new IntentFilter("com.example.cardioflow.BLE_DATA_RECEIVED"), flag);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.example.cardioflow.BLE_DATA_RECEIVED");
+        filter.addAction("com.example.cardioflow.BLE_STATUS_CHANGED");
+        requireContext().registerReceiver(bleReceiver, filter, flag);
         updateChart();
     }
 
@@ -180,16 +256,29 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupChart() {
+        // Setup HR Chart
         chartHr.getDescription().setEnabled(false);
         chartHr.getLegend().setEnabled(false);
         chartHr.getXAxis().setDrawGridLines(false);
         chartHr.getAxisRight().setEnabled(false);
+
+        // Setup ECG Chart
+        chartEcg.getDescription().setEnabled(false);
+        chartEcg.getLegend().setEnabled(false);
+        chartEcg.getXAxis().setDrawGridLines(false);
+        chartEcg.getAxisRight().setEnabled(false);
+        chartEcg.getAxisLeft().setDrawGridLines(true);
+        chartEcg.getAxisLeft().setAxisMinimum(0f);
+        chartEcg.getAxisLeft().setAxisMaximum(4095f); // 12-bit ADC range
     }
 
-    private void processNewData(int hr, int spo2, double temp, double hum, boolean leadsOff) {
+    private void processNewData(int hr, int spo2, double temp, double hum, boolean leadsOff, List<Integer> ecgSamples) {
         updateLastValues(hr, spo2, temp, hum);
         if (isResumed()) {
             updateChart();
+            if (ecgSamples != null && !ecgSamples.isEmpty()) {
+                updateEcgChart(ecgSamples);
+            }
         }
         checkThresholds(hr, spo2, temp, hum);
         
@@ -198,11 +287,40 @@ public class HomeFragment extends Fragment {
             tvAlarmStatus.setTextColor(Color.RED);
         }
 
+        // Send all data to Cloud for verification (even if sensors are disconnected with -1)
+        Measurement m = new Measurement();
+        m.setPatientId(currentUser != null ? currentUser.getId() : "1");
+        m.setHeartRate(hr);
+        m.setSpo2(spo2);
+        m.setTemperature(temp);
+        m.setHumidity(hum);
+        m.setEcgSamples(ecgSamples);
+        m.setTimestamp(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date()));
+        CloudSync.sendRealTimeData(requireContext(), m);
+
         readingsCount++;
         sumHr += hr;
         sumSpo2 += spo2;
         sumTemp += temp;
         sumHum += hum;
+    }
+
+    private void updateEcgChart(List<Integer> samples) {
+        List<Entry> entries = new ArrayList<>();
+        for (int i = 0; i < samples.size(); i++) {
+            entries.add(new Entry(i, samples.get(i).floatValue()));
+        }
+
+        LineDataSet dataSet = new LineDataSet(entries, "ECG");
+        dataSet.setColor(Color.GREEN);
+        dataSet.setLineWidth(1.5f);
+        dataSet.setDrawValues(false);
+        dataSet.setDrawCircles(false);
+        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+
+        LineData lineData = new LineData(dataSet);
+        chartEcg.setData(lineData);
+        chartEcg.invalidate();
     }
 
     private void updateLastValues(int hr, int spo2, double temp, double hum) {

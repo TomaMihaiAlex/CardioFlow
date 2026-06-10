@@ -12,6 +12,14 @@ public class AppConstants {
     public static final String UART_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
     public static final String TX_CHAR_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
     public static final String CCCD_UUID = "00002902-0000-1000-8000-00805f9b34fb";
+
+    // Nordic UART Service (Common for ESP32, Arduino, etc.)
+    public static final String NORDIC_UART_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    public static final String NORDIC_TX_CHAR = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+    
+    // Custom Hardware UUIDs (from user's screenshot)
+    public static final String CUSTOM_SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
+    public static final String CUSTOM_TX_CHAR_UUID = "12345678-1234-1234-1234-000000000001";
     
     // Theme values
     public static final int THEME_STANDARD = 0;

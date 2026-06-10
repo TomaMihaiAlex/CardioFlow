@@ -83,12 +83,19 @@ public class RegisterActivity extends AppCompatActivity {
         if (!valid) return;
 
         User user = new User(null, email, pass, role, fName, lName, "");
-        if (authManager.register(user)) {
-            Toast.makeText(this, R.string.registration_success, Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            tilEmail.setError(getString(R.string.error_user_exists));
-        }
+        
+        authManager.registerFirebase(user, new AuthManager.AuthCallback() {
+            @Override
+            public void onSuccess(User registeredUser) {
+                Toast.makeText(RegisterActivity.this, R.string.registration_success, Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onError(String error) {
+                Toast.makeText(RegisterActivity.this, "Eroare Cloud: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void clearErrors() {
