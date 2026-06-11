@@ -11,6 +11,7 @@
     <color name="surface">#FFFFFF</color>
     <color name="on_surface">#212121</color>
     <color name="on_surface_variant">#616161</color>
+    <color name="welcome_bar_background">#F0F0F0</color>
 
     <color name="error">#FF4444</color>
 </resources>
